@@ -5,7 +5,7 @@ class Level {
   corncobs;
   level_end_x;
 
-  constructor(enemies, clouds, backgroundObjects, corncobs = [], level_end_x = 4400) {
+  constructor(enemies, clouds, backgroundObjects, corncobs = [], level_end_x = 4500) {
     this.enemies = enemies;
     this.clouds = clouds;
     this.backgroundObjects = backgroundObjects;

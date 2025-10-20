@@ -104,6 +104,14 @@ class Character extends MovableObject {
     };
   }
 
+  isAboveGround() {
+    // Hier muss der "Boden" definiert werden
+    // Wenn du unterschiedliche Bodenhöhen hast, musst du das hier anpassen
+    const groundLevel = 155; // oder 156 - je nachdem wo dein Boden ist
+
+    return this.y < groundLevel;
+  }
+
 
   // Und die drawFrame Methode anpassen
   drawFrame(ctx) {
@@ -217,7 +225,7 @@ class Character extends MovableObject {
       // Long Idle Animation in Schleife abspielen
       this.loadImage(this.IMAGES_LONG_IDLE[currentImageIndex]);
       currentImageIndex = (currentImageIndex + 1) % this.IMAGES_LONG_IDLE.length;
-    }, 200); // Geschwindigkeit der Long Idle Animation anpassen
+    }, 200); // Geschwindigkeit der Long Idle Animation
   }
 
   stopLongIdleAnimation() {
@@ -248,5 +256,37 @@ class Character extends MovableObject {
         this.loadImage(this.IMAGES_IDLE[this.IMAGES_IDLE.length - 1]);
       }
     }, 200);
+  }
+
+  applyGravity() {
+    setInterval(() => {
+      let previousY = this.y; // Vorherige Position speichern
+      let previousSpeedY = this.speedY; // Vorherige Geschwindigkeit speichern
+
+      // Gravity anwenden
+      if (this.isAboveGround() || this.speedY > 0) {
+        this.y -= this.speedY;
+        this.speedY -= this.acceleration;
+      }
+
+      // ★★★ WICHTIG: Character auf Boden-Position fixieren ★★★
+      if (!this.isAboveGround() && this.speedY <= 0) {
+        this.y = 155; // Auf exakte Boden-Position setzen
+        this.speedY = 0; // Fallgeschwindigkeit zurücksetzen
+      }
+
+      // ★★★ HIER - Y-Wert nach dem Fallen anzeigen ★★★
+      if (previousSpeedY > 0 && this.speedY <= 0) {
+        console.log("✅ Fall beendet! End-Y-Position:", this.y,
+          "Gefallen von Y:", previousY, "zu Y:", this.y);
+      }
+
+      // Auf dem Boden
+      if (!this.isAboveGround()) {
+        if (previousY !== this.y) {
+          console.log("🏁 Auf dem Boden gelandet! Y-Position:", this.y);
+        }
+      }
+    }, 1000 / 25);
   }
 }

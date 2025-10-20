@@ -10,6 +10,7 @@ class World {
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
   corncob = new Corncob();
+  chickenNest = new ChickenNest();
   coins = []; // mehrere Münzen statt einer
   salsas = []; // mehrere Salsaflaschen
 
@@ -21,26 +22,95 @@ class World {
     this.setWorld();
     this.countdown.world = this; // Welt-Referenz setzen, damit Countdown Charakter beeinflussen kann
     this.checkCollisions();
+
     // Vorladen des Heilungssounds
     this.healSound = new Audio('audio/heart-1.mp3');
     this.healSound.volume = 0.5;
     this.healSound.load(); // sorgt dafür, dass die Datei vorgeladen wird
+
+    // Sound für Endboss-Schaden
+    this.endbossHurtSound = new Audio('audio/endboss-hurt.mp3'); // oder 'audio/endboss-hurt.mp3'
+    this.endbossHurtSound.volume = 0.6;
+    this.endbossHurtSound.load();
   }
 
   setWorld() {
     this.character.world = this;
     this.coins = this.generateCoins(); // 💰 10 zufällige Münzen generieren
     this.salsas = this.generateSalsas(); // 🌶️ Salsa-Flaschen zufällig erzeugen
+    // Endboss & StatusBar Referenz setzen
+    this.endboss = this.level.enemies.find(e => e instanceof Endboss);
+    this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
   }
 
   checkCollisions() {
     setInterval(() => {
       const collidedEnemies = [];
 
-      // Zuerst alle Kollisionen sammeln
       this.level.enemies.forEach((enemy, index) => {
-        if (this.character.isColliding(enemy) && !enemy.isDead) {
-          collidedEnemies.push({ enemy, index });
+
+        // 🟥 FALL 1: Endboss
+        if (enemy instanceof Endboss) {
+
+          if (this.character.isColliding(enemy)) {
+
+            const hitFromAbove =
+              this.character.isAboveGround() &&
+              this.character.isFalling() &&
+              this.character.y + this.character.height < enemy.y + enemy.height / 2;
+
+            if (hitFromAbove) {
+              enemy.activate();
+              enemy.energy = (enemy.energy || 100) - 20;
+
+              // Sound abspielen
+              if (this.endbossHurtSound) {
+                this.endbossHurtSound.currentTime = 0;
+                this.endbossHurtSound.play().catch(e => console.warn('Endboss Sound:', e));
+              }
+
+              if (this.endbossBar) {
+                this.endbossBar.setPercentage(enemy.energy);
+              }
+
+              this.character.speedY = 20;
+
+              if (enemy.energy <= 0) {
+                enemy.isDead = true;
+                console.log("🎉 Endboss besiegt!");
+
+                // ★★★ HIER DEN NEUEN CODE EINFÜGEN ★★★
+                // Endboss nach Todes-Animation entfernen
+                setTimeout(() => {
+                  const index = this.level.enemies.indexOf(enemy);
+                  if (index > -1) {
+                    this.level.enemies.splice(index, 1);
+                    console.log("🗑️ Endboss wurde entfernt!");
+
+                    // Optional: Statusleiste auch entfernen
+                    if (this.endbossBar) {
+                      const barIndex = this.level.enemies.indexOf(this.endbossBar);
+                      if (barIndex > -1) {
+                        this.level.enemies.splice(barIndex, 1);
+                      }
+                    }
+                  }
+                }, 1500); // Nach 1.5 Sekunden entfernen
+                // ★★★ ENDE DES NEUEN CODES ★★★
+              }
+
+            } else {
+              // ✅ Nur dann Schaden am Spieler, wenn es nicht von oben war
+              this.character.hit();
+              this.statusBar.setPercentage(this.character.energy);
+            }
+          }
+
+          // 🟨 FALL 2: Normale Gegner (Chicken usw.)
+        } else {
+          if (this.character.isColliding(enemy) && !enemy.isDead) {
+            collidedEnemies.push({ enemy, index });
+          }
         }
       });
 
@@ -76,6 +146,7 @@ class World {
           }
         });
       }
+
 
       // Maiskolben-Kollision – Charakter heilt sich vollständig
       if (this.corncob && this.character.isColliding(this.corncob)) {
@@ -177,6 +248,7 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
+    this.addToMap(this.chickenNest);
 
     if (this.corncob) {
       this.addToMap(this.corncob);
