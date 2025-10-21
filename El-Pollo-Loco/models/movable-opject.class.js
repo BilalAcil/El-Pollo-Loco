@@ -48,7 +48,7 @@ class MovableObject extends DrawableObject {
   }
 
   isFalling() {
-    return this.speedY < 10;
+    return this.speedY < -2;
   }
 
 

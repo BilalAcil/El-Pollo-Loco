@@ -94,7 +94,7 @@ class Character extends MovableObject {
   }
 
 
-  // HIER kommt die Kollisionsbox für den Character
+  // Kollisionsbox Character
   get collisionBox() {
     return {
       x: this.x + 10, // Etwas von links verschieben
@@ -113,7 +113,6 @@ class Character extends MovableObject {
   }
 
 
-  // Und die drawFrame Methode anpassen
   drawFrame(ctx) {
     if (this instanceof Character) {
       const box = this.collisionBox;
@@ -269,24 +268,24 @@ class Character extends MovableObject {
         this.speedY -= this.acceleration;
       }
 
-      // ★★★ WICHTIG: Character auf Boden-Position fixieren ★★★
+      // Character auf Boden-Position fixieren
       if (!this.isAboveGround() && this.speedY <= 0) {
         this.y = 155; // Auf exakte Boden-Position setzen
         this.speedY = 0; // Fallgeschwindigkeit zurücksetzen
       }
 
-      // ★★★ HIER - Y-Wert nach dem Fallen anzeigen ★★★
-      if (previousSpeedY > 0 && this.speedY <= 0) {
-        console.log("✅ Fall beendet! End-Y-Position:", this.y,
-          "Gefallen von Y:", previousY, "zu Y:", this.y);
-      }
+      // // Y-Wert nach dem Fallen anzeigen
+      // if (previousSpeedY > 0 && this.speedY <= 0) {
+      //   console.log("✅ Fall beendet! End-Y-Position:", this.y,
+      //     "Gefallen von Y:", previousY, "zu Y:", this.y);
+      // }
 
-      // Auf dem Boden
-      if (!this.isAboveGround()) {
-        if (previousY !== this.y) {
-          console.log("🏁 Auf dem Boden gelandet! Y-Position:", this.y);
-        }
-      }
+      // // Auf dem Boden
+      // if (!this.isAboveGround()) {
+      //   if (previousY !== this.y) {
+      //     console.log("🏁 Auf dem Boden gelandet! Y-Position:", this.y);
+      //   }
+      // }
     }, 1000 / 25);
   }
 }

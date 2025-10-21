@@ -22,6 +22,8 @@ class World {
     this.setWorld();
     this.countdown.world = this; // Welt-Referenz setzen, damit Countdown Charakter beeinflussen kann
     this.checkCollisions();
+    this.lastEnemyHit = 0;    // Zeitpunkt des letzten Gegner-Treffers
+    this.lastEndbossHit = 0;  // Zeitpunkt des letzten Endboss-Treffers
 
     // Vorladen des Heilungssounds
     this.healSound = new Audio('audio/heart-1.mp3');
@@ -32,6 +34,8 @@ class World {
     this.endbossHurtSound = new Audio('audio/endboss-hurt.mp3'); // oder 'audio/endboss-hurt.mp3'
     this.endbossHurtSound.volume = 0.6;
     this.endbossHurtSound.load();
+
+
   }
 
   setWorld() {
@@ -56,19 +60,17 @@ class World {
             const enemyTop = enemy.y;
             const enemyMiddle = enemy.y + enemy.height / 2;
 
-            // Präzisere Prüfung für Sprung auf den Kopf
             const hitFromAbove =
               this.character.isAboveGround() &&
-              this.character.isFalling() &&
+              this.character.speedY < 0 &&
               characterBottom < enemyMiddle &&
-              characterBottom > enemyTop - 10;
+              characterBottom > enemyTop - 15;
 
             if (hitFromAbove) {
               characterHitEndbossFromAbove = true;
               enemy.activate();
               enemy.energy = (enemy.energy || 100) - 20;
 
-              // Sound abspielen
               if (this.endbossHurtSound) {
                 this.endbossHurtSound.currentTime = 0;
                 this.endbossHurtSound.play().catch(e => console.warn('Endboss Sound:', e));
@@ -102,58 +104,78 @@ class World {
             }
           }
 
-          // 🟨 FALL 2: Normale Gegner (Chicken usw.)
+          // 🟨 FALL 2: Normale Gegner (Chicken usw.) - AUSSCHLIESSEN von StatusBars und anderen Objekten
         } else {
-          if (this.character.isColliding(enemy) && !enemy.isDead) {
+          if (this.isActualEnemy(enemy) && this.character.isColliding(enemy) && !enemy.isDead) {
             collidedEnemies.push({ enemy, index });
           }
         }
       });
 
-      // Normale Gegner verarbeiten
+      // 🔥 VERBESSERTE Logik für normale Gegner
       let characterJumpedOnEnemy = false;
 
       collidedEnemies.forEach(({ enemy, index }) => {
-        if (this.character.isAboveGround() && this.character.isFalling() &&
-          this.character.y + this.character.height < enemy.y + 30) {
+        const characterBottom = this.character.y + this.character.height;
+        const enemyTop = enemy.y;
+
+        const jumpedOnEnemy =
+          this.character.isAboveGround() &&
+          this.character.speedY < 0 &&
+          characterBottom < enemyTop + 25 &&
+          characterBottom > enemyTop - 10;
+
+        if (jumpedOnEnemy && !enemy.isDead) {
+          console.log("✅ Sprung auf Gegner erkannt!", enemy.constructor.name);
           this.killEnemy(enemy, index);
           characterJumpedOnEnemy = true;
         }
       });
 
-      // Charakter springt nur einmal ab
+      // Charakter springt ab
       if (characterJumpedOnEnemy) {
-        this.character.speedY = 10;
+        this.character.speedY = 15;
       }
 
-      // Endboss: Nur Schaden am Charakter, wenn NICHT von oben getroffen
+      // 🔥 KORRIGIERT: Endboss mit COOLDOWN
       if (!characterHitEndbossFromAbove) {
         this.level.enemies.forEach((enemy) => {
           if (enemy instanceof Endboss && this.character.isColliding(enemy) && !enemy.isDead) {
-            this.character.hit();
-            this.statusBar.setPercentage(this.character.energy);
+            // 🔥 COOLDOWN für Endboss-Treffer
+            const now = Date.now();
+            if (!this.lastEndbossHit || now - this.lastEndbossHit > 1000) {
+              this.lastEndbossHit = now;
+              this.character.hit();
+              this.statusBar.setPercentage(this.character.energy);
+            }
           }
         });
       }
 
-      // Normale Gegner: Seitliche Kollisionen (nur wenn nicht gesprungen)
+      // 🔥 VERBESSERT: Normale Gegner mit COOLDOWN
       if (!characterJumpedOnEnemy) {
         collidedEnemies.forEach(({ enemy }) => {
           if (!enemy.isDead) {
-            this.character.hit();
-            this.statusBar.setPercentage(this.character.energy);
-            if (this.character.energy <= 0) {
-              this.character.isDead = true;
-              this.character.playAnimation(this.character.IMAGES_DEAD);
-              this.statusBar.setPercentage(0);
+            // 🔥 COOLDOWN für normale Gegner-Treffer
+            const now = Date.now();
+            if (!this.lastEnemyHit || now - this.lastEnemyHit > 800) {
+              this.lastEnemyHit = now;
+              console.log("❌ Seitliche Kollision mit", enemy.constructor.name);
+              this.character.hit();
+              this.statusBar.setPercentage(this.character.energy);
+
+              if (this.character.energy <= 0) {
+                this.character.isDead = true;
+                this.character.playAnimation(this.character.IMAGES_DEAD);
+                this.statusBar.setPercentage(0);
+              }
             }
             return;
           }
         });
       }
 
-      // Rest deines Codes für Maiskolben, Münzen, Salsas...
-      // Maiskolben-Kollision
+      // Rest deines Codes für Items...
       if (this.corncob && this.character.isColliding(this.corncob)) {
         this.corncob = null;
         this.healSound.currentTime = 0;
@@ -189,7 +211,7 @@ class World {
         }
       });
 
-    }, 200);
+    }, 50);
   }
 
   killEnemy(enemy, index) {
@@ -315,5 +337,17 @@ class World {
     }
 
     return salsas;
+  }
+
+  /**
+ * Prüft, ob es sich um einen echten Gegner handelt (keine StatusBars etc.)
+ * @param {MovableObject} enemy 
+ * @returns {boolean}
+ */
+  isActualEnemy(enemy) {
+    return (enemy instanceof Chicken ||
+      enemy instanceof ChickenSmall ||
+      enemy instanceof Endboss) &&
+      !(enemy instanceof EndBossStatusBar);
   }
 }
