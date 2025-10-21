@@ -46,20 +46,25 @@ class World {
   checkCollisions() {
     setInterval(() => {
       const collidedEnemies = [];
+      let characterHitEndbossFromAbove = false;
 
       this.level.enemies.forEach((enemy, index) => {
-
         // 🟥 FALL 1: Endboss
         if (enemy instanceof Endboss) {
-
           if (this.character.isColliding(enemy)) {
+            const characterBottom = this.character.y + this.character.height;
+            const enemyTop = enemy.y;
+            const enemyMiddle = enemy.y + enemy.height / 2;
 
+            // Präzisere Prüfung für Sprung auf den Kopf
             const hitFromAbove =
               this.character.isAboveGround() &&
               this.character.isFalling() &&
-              this.character.y + this.character.height < enemy.y + enemy.height / 2;
+              characterBottom < enemyMiddle &&
+              characterBottom > enemyTop - 10;
 
             if (hitFromAbove) {
+              characterHitEndbossFromAbove = true;
               enemy.activate();
               enemy.energy = (enemy.energy || 100) - 20;
 
@@ -79,15 +84,12 @@ class World {
                 enemy.isDead = true;
                 console.log("🎉 Endboss besiegt!");
 
-                // ★★★ HIER DEN NEUEN CODE EINFÜGEN ★★★
-                // Endboss nach Todes-Animation entfernen
                 setTimeout(() => {
                   const index = this.level.enemies.indexOf(enemy);
                   if (index > -1) {
                     this.level.enemies.splice(index, 1);
                     console.log("🗑️ Endboss wurde entfernt!");
 
-                    // Optional: Statusleiste auch entfernen
                     if (this.endbossBar) {
                       const barIndex = this.level.enemies.indexOf(this.endbossBar);
                       if (barIndex > -1) {
@@ -95,14 +97,8 @@ class World {
                       }
                     }
                   }
-                }, 1500); // Nach 1.5 Sekunden entfernen
-                // ★★★ ENDE DES NEUEN CODES ★★★
+                }, 1500);
               }
-
-            } else {
-              // ✅ Nur dann Schaden am Spieler, wenn es nicht von oben war
-              this.character.hit();
-              this.statusBar.setPercentage(this.character.energy);
             }
           }
 
@@ -114,7 +110,7 @@ class World {
         }
       });
 
-      // Dann verarbeiten - zuerst springt-Aktionen
+      // Normale Gegner verarbeiten
       let characterJumpedOnEnemy = false;
 
       collidedEnemies.forEach(({ enemy, index }) => {
@@ -130,7 +126,17 @@ class World {
         this.character.speedY = 10;
       }
 
-      // Dann seitliche Kollisionen prüfen (nur wenn nicht gesprungen)
+      // Endboss: Nur Schaden am Charakter, wenn NICHT von oben getroffen
+      if (!characterHitEndbossFromAbove) {
+        this.level.enemies.forEach((enemy) => {
+          if (enemy instanceof Endboss && this.character.isColliding(enemy) && !enemy.isDead) {
+            this.character.hit();
+            this.statusBar.setPercentage(this.character.energy);
+          }
+        });
+      }
+
+      // Normale Gegner: Seitliche Kollisionen (nur wenn nicht gesprungen)
       if (!characterJumpedOnEnemy) {
         collidedEnemies.forEach(({ enemy }) => {
           if (!enemy.isDead) {
@@ -141,37 +147,29 @@ class World {
               this.character.playAnimation(this.character.IMAGES_DEAD);
               this.statusBar.setPercentage(0);
             }
-            // Nach einem Treffer abbrechen
             return;
           }
         });
       }
 
-
-      // Maiskolben-Kollision – Charakter heilt sich vollständig
+      // Rest deines Codes für Maiskolben, Münzen, Salsas...
+      // Maiskolben-Kollision
       if (this.corncob && this.character.isColliding(this.corncob)) {
-        this.corncob = null; // Maiskolben entfernen
-
-        // Heilungssound sofort abspielen
+        this.corncob = null;
         this.healSound.currentTime = 0;
-        this.healSound.playbackRate = 1;  // Geschwindigkeit: 1.0 = normal, >1 = schneller, <1 = langsamer
+        this.healSound.playbackRate = 1;
+        this.healSound.volume = 0.6;
         this.healSound.play().catch(e => console.warn(e));
-
-        // Lebensenergie auffüllen
         this.character.energy = 100;
         this.statusBar.setPercentage(this.character.energy);
-
-        // Statusbar 3x blinken lassen
         this.statusBar.blinkFullHealth();
       }
 
       // Münz-Kollision
       this.coins.forEach((coin, index) => {
         if (this.character.isColliding(coin)) {
-          this.coins.splice(index, 1); // Münze entfernen
-          this.statusBarCoin.addCoin(); // Zähler +1
-
-          // Sound abspielen
+          this.coins.splice(index, 1);
+          this.statusBarCoin.addCoin();
           const coinSound = new Audio('audio/coin.mp3');
           coinSound.volume = 0.3;
           coinSound.playbackRate = 1.2;
@@ -179,12 +177,11 @@ class World {
         }
       });
 
-      // 🌶️ Salsa-Kollision
+      // Salsa-Kollision
       this.salsas.forEach((salsa, index) => {
         if (this.character.isColliding(salsa)) {
           this.salsas.splice(index, 1);
-          this.statusBarSalsa.addSalsa(); // 🔥 Deine Salsa-Anzeige aktualisieren
-
+          this.statusBarSalsa.addSalsa();
           const salsaSound = new Audio('audio/salsa.mp3');
           salsaSound.volume = 0.4;
           salsaSound.playbackRate = 2.0;

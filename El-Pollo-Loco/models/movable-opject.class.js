@@ -58,10 +58,26 @@ class MovableObject extends DrawableObject {
    * @returns {boolean}
    */
   isColliding(mo) {
-    return this.x + this.width > mo.x &&
-      this.x < mo.x + mo.width &&
-      this.y + this.height > mo.y &&
-      this.y < mo.y + mo.height;
+    // Eigene Kollisionsbox verwenden
+    const myBox = this.collisionBox || {
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height
+    };
+
+    // Kollisionsbox des anderen Objekts verwenden
+    const otherBox = mo.collisionBox || {
+      x: mo.x,
+      y: mo.y,
+      width: mo.width,
+      height: mo.height
+    };
+
+    return myBox.x + myBox.width > otherBox.x &&
+      myBox.x < otherBox.x + otherBox.width &&
+      myBox.y + myBox.height > otherBox.y &&
+      myBox.y < otherBox.y + otherBox.height;
   }
 
   /**
