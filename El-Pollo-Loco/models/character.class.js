@@ -93,7 +93,9 @@ class Character extends MovableObject {
     this.applyGravity();
     this.atEndboss = false;
     this.animate();
-    this.idleImage = 'img/2_character_pepe/1_idle/idle/I-1.png';
+    this.throwSound = new Audio('audio/throw-sound-1.mp3');
+    this.throwSound.volume = 0.4; // etwas leiser
+    // this.idleImage = 'img/2_character_pepe/1_idle/idle/I-1.png';
     this.showIdle = false;
     this.lastMoveTime = Date.now();
     this.idleAnimationStarted = false;
@@ -239,11 +241,15 @@ class Character extends MovableObject {
     this.isThrowing = true;
     this.lastActionTime = Date.now(); // verhindert dass sofort Idle startet
 
+    // 🎵 Sound abspielen
+    this.throwSound.currentTime = 0; // Start von vorne, falls schnell mehrfach geworfen wird
+    this.throwSound.play();
+
     const throwImages = this.IMAGES_THROW; // benutze das Array aus der Klasse
     let current = 0;
 
     // Zeige jedes Frame für 200ms -> gesamt 600ms
-    const frameDuration = 200;
+    const frameDuration = 50;
 
     const interval = setInterval(() => {
       // Lade aktuelles Frame
