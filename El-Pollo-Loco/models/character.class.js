@@ -68,15 +68,23 @@ class Character extends MovableObject {
     'img/2_character_pepe/4_hurt/H-43.png'
   ];
 
+  IMAGES_THROW = [
+    'img/2_character_pepe/2_walk/W-21.png',
+    'img/2_character_pepe/2_walk/W-22.png',
+    'img/2_character_pepe/2_walk/W-23.png'
+  ];
+
   world;
   currentAnimation = 'idle';
   animationFinished = true;
+  isThrowing = false;         // <<< NEU: Flag während Wurfanimation
   lastActionTime = 0;
   actionCooldown = 500; // Zeit in ms nach der zum Idle gewechselt wird
 
   constructor() {
     super().loadImage('img/2_character_pepe/1_idle/idle/I-1.png');
     this.loadImages(this.IMAGES_IDLE);
+    this.loadImages(this.IMAGES_THROW);
     this.loadImages(this.IMAGES_WALKING);
     this.loadImages(this.IMAGES_JUMPING);
     this.loadImages(this.IMAGES_DEAD);
@@ -141,6 +149,7 @@ class Character extends MovableObject {
         this.otherDirection = false;
         this.handleMovement();
       }
+
       if (
         this.world.keyboard.LEFT &&
         this.x > 0 &&
@@ -156,23 +165,36 @@ class Character extends MovableObject {
         this.handleMovement();
       }
 
+      // 👉 WURF-ANIMATION (Taste D)
+      if (this.world.keyboard.D && this.animationFinished) {
+        this.throwAnimation();
+        this.lastActionTime = Date.now(); // verhindert Idle-Reset während des Wurfs
+        this.lastMoveTime = Date.now(); // <--- doppelt sicher!
+      }
+
       // Endboss-Bereich aktivieren
       if (this.x >= 4100) {
         this.atEndboss = true;
       }
 
       // Zur Idle-Animation wechseln nach Inaktivität
-      if (Date.now() - this.lastActionTime > this.actionCooldown &&
+      if (
+        Date.now() - this.lastActionTime > this.actionCooldown &&
         !this.isAboveGround() &&
         !this.isHurt() &&
         !this.isDead() &&
-        this.currentAnimation !== 'idle') {
+        this.currentAnimation !== 'idle'
+      ) {
         this.currentAnimation = 'idle';
       }
     }, 1000 / 60);
 
+
     // Animation
     setInterval(() => {
+      // Wenn wir gerade werfen, soll die normale Animations-Logik nichts tun
+      if (this.isThrowing) return;
+
       const idleTime = Date.now() - this.lastMoveTime;
 
       if (this.isDead()) {
@@ -187,20 +209,20 @@ class Character extends MovableObject {
       } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_WALKING);
-      } else if (idleTime > 12000) { // Nach 12 Sekunden zu Long Idle wechseln
+      } else if (idleTime > 12000) {
         if (!this.longIdleActive) {
           this.startLongIdleAnimation();
         }
-      } else if (idleTime > 10000) { // Nach 10 Sekunden normale Idle
+      } else if (idleTime > 10000) {
         if (!this.idleAnimationStarted) {
           this.playIdleAnimation();
         }
       } else {
-        // Einzelnes Idle-Bild anzeigen
         this.stopLongIdleAnimation();
         this.loadImage(this.IMAGES_IDLE[0]);
       }
     }, 50);
+
   }
 
   handleMovement() {
@@ -208,6 +230,44 @@ class Character extends MovableObject {
     this.idleAnimationStarted = false;
     this.stopLongIdleAnimation();
   }
+
+  throwAnimation() {
+    // blockiere weitere Würfe
+    if (!this.animationFinished || this.isThrowing) return;
+
+    this.animationFinished = false;
+    this.isThrowing = true;
+    this.lastActionTime = Date.now(); // verhindert dass sofort Idle startet
+
+    const throwImages = this.IMAGES_THROW; // benutze das Array aus der Klasse
+    let current = 0;
+
+    // Zeige jedes Frame für 200ms -> gesamt 600ms
+    const frameDuration = 200;
+
+    const interval = setInterval(() => {
+      // Lade aktuelles Frame
+      const path = throwImages[current];
+      if (path) this.loadImage(path);
+
+      current++;
+
+      // alle Frames gezeigt?
+      if (current >= throwImages.length) {
+        clearInterval(interval);
+
+        // kleine Pause (optional), dann zurück zur normalen Idle-Anzeige
+        setTimeout(() => {
+          // Reset: zeige wieder Standard-Idle (erstes Idle-Bild)
+          this.loadImage(this.IMAGES_IDLE[0]);
+          this.animationFinished = true;
+          this.isThrowing = false;
+        }, 50); // 50ms kleine Puffer-Zeit
+      }
+    }, frameDuration);
+  }
+
+
 
   startLongIdleAnimation() {
     this.longIdleActive = true;

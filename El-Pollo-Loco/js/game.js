@@ -26,6 +26,9 @@ window.addEventListener('keydown', (e) => {
   if (e.key === ' ') {  // Leerzeichen für Space
     keyboard.SPACE = true;
   }
+  if (e.key === 'd' || e.key === 'D') {  // Taste D für Wurf
+    keyboard.D = true;
+  }
 });
 
 
@@ -35,4 +38,5 @@ window.addEventListener('keyup', (e) => {
   if (e.key === 'ArrowUp') keyboard.UP = false;
   if (e.key === 'ArrowDown') keyboard.DOWN = false;
   if (e.key === ' ') keyboard.SPACE = false;
+  if (e.key === 'd' || e.key === 'D') keyboard.D = false;
 });
