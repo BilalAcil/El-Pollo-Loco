@@ -237,46 +237,48 @@ class Character extends MovableObject {
     // blockiere weitere Würfe
     if (!this.animationFinished || this.isThrowing) return;
 
+    // 🎯 Prüfen, ob überhaupt Flaschen da sind
+    if (this.world.statusBarSalsa.salsaCount <= 0) {
+      const failSound = new Audio('audio/Fail.mp3');
+      failSound.volume = 0.4;
+      failSound.playbackRate = 2; // etwas schneller
+      failSound.play().catch(e => console.warn('Fail sound error:', e));
+      return; // ❌ keine Animation, kein Wurf
+    }
+
     this.animationFinished = false;
     this.isThrowing = true;
     this.lastActionTime = Date.now(); // verhindert dass sofort Idle startet
 
-    // 🎵 Sound abspielen
-    this.throwSound.currentTime = 0; // Start von vorne, falls schnell mehrfach geworfen wird
-    this.throwSound.play();
+    // 🎵 Sound für den eigentlichen Wurf
+    this.throwSound.currentTime = 0;
+    this.throwSound.play().catch(e => console.warn('Throw sound error:', e));
 
-    const throwImages = this.IMAGES_THROW; // benutze das Array aus der Klasse
+    const throwImages = this.IMAGES_THROW;
     let current = 0;
-
-    // Zeige jedes Frame für 200ms -> gesamt 600ms
     const frameDuration = 50;
 
     const interval = setInterval(() => {
-      // Lade aktuelles Frame
       const path = throwImages[current];
       if (path) this.loadImage(path);
-
       current++;
 
-      // alle Frames gezeigt?
       if (current >= throwImages.length) {
         clearInterval(interval);
 
-        // kleine Pause (optional), dann zurück zur normalen Idle-Anzeige
         setTimeout(() => {
-          // Wenn Salsa-Flaschen vorhanden sind, werfe eine
-          if (this.world.statusBarSalsa.salsaCount > 0) {
-            this.world.statusBarSalsa.salsaCount--;
+          // ✅ Nur hier Salsa-Flasche erzeugen, da wir garantiert mindestens 1 hatten
+          this.world.statusBarSalsa.salsaCount--;
 
-            // Neue Salsa-Flasche erzeugen
-            const offsetX = this.otherDirection ? -50 : 100;
-            const salsa = new SalsaThrow(this.x + offsetX, this.y + this.height / 2, this.otherDirection);
-            this.world.throwableObjects.push(salsa);
+          const offsetX = this.otherDirection ? -50 : 100;
+          const salsa = new SalsaThrow(
+            this.x + offsetX,
+            this.y + this.height / 2 + 20, // realistischer Startpunkt
+            this.otherDirection
+          );
+          this.world.throwableObjects.push(salsa);
 
-            // Optional: Wurf-Sound (bereits in throwSound enthalten)
-          }
-
-          // Reset zurück zur Idle-Animation
+          // Zurück zur Idle-Animation
           this.loadImage(this.IMAGES_IDLE[0]);
           this.animationFinished = true;
           this.isThrowing = false;
@@ -284,6 +286,7 @@ class Character extends MovableObject {
       }
     }, frameDuration);
   }
+
 
 
 
