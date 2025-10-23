@@ -16,7 +16,7 @@ class SalsaThrow extends MovableObject {
     super().loadImage(this.IMAGES_ROTATION[0]);
     this.loadImages(this.IMAGES_ROTATION);
     this.x = x;
-    this.y = 330;
+    this.y = y;
     this.direction = direction;
     this.speedX = 10; // Wurfgeschwindigkeit
 
