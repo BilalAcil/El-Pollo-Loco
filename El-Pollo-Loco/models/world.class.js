@@ -177,6 +177,46 @@ class World {
         });
       }
 
+      // 💥 Salsa-Flaschen treffen Endboss
+      this.throwableObjects.forEach((salsa, index) => {
+        this.level.enemies.forEach((enemy) => {
+          if (enemy instanceof Endboss && !enemy.isDead && salsa.isColliding(enemy)) {
+
+            // ✅ Endboss wird aktiviert & verliert Energie
+            enemy.activate();
+            enemy.energy = (enemy.energy || 100) - 20;
+
+            // 🎵 Treffer-Sound (du kannst einen eigenen Sound nehmen)
+            const hitSound = new Audio('audio/hit-sound.mp3');
+            hitSound.volume = 0.5;
+            hitSound.play().catch(e => console.warn('Hit sound error:', e));
+
+            // ⚡ Salsa-Flasche entfernen
+            this.throwableObjects.splice(index, 1);
+
+            // 🔋 Statusbar aktualisieren
+            if (this.endbossBar) {
+              this.endbossBar.setPercentage(enemy.energy);
+            }
+
+            // 🧨 Endboss tot?
+            if (enemy.energy <= 0) {
+              enemy.isDead = true;
+              console.log("🎯 Endboss mit Salsa besiegt!");
+
+              setTimeout(() => {
+                const enemyIndex = this.level.enemies.indexOf(enemy);
+                if (enemyIndex > -1) {
+                  this.level.enemies.splice(enemyIndex, 1);
+                  console.log("🗑️ Endboss entfernt!");
+                }
+              }, 1500);
+            }
+          }
+        });
+      });
+
+
       // Rest deines Codes für Items...
       if (this.corncob && this.character.isColliding(this.corncob)) {
         this.corncob = null;
