@@ -73,11 +73,6 @@ class World {
               enemy.activate();
               enemy.energy = (enemy.energy || 100) - 20;
 
-              if (this.endbossHurtSound) {
-                this.endbossHurtSound.currentTime = 0;
-                this.endbossHurtSound.play().catch(e => console.warn('Endboss Sound:', e));
-              }
-
               if (this.endbossBar) {
                 this.endbossBar.setPercentage(enemy.energy);
               }
@@ -184,6 +179,7 @@ class World {
 
             salsa.stopSound(); // 🎧 Sound sofort stoppen
 
+
             // ✅ Endboss wird aktiviert & verliert Energie
             enemy.activate();
             enemy.energy = (enemy.energy || 100) - 20;
@@ -192,6 +188,8 @@ class World {
             const hitSound = new Audio('audio/hit-sound.mp3');
             hitSound.volume = 0.5;
             hitSound.play().catch(e => console.warn('Hit sound error:', e));
+
+
 
             // ⚡ Salsa-Flasche entfernen
             this.throwableObjects.splice(index, 1);
