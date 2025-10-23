@@ -264,11 +264,23 @@ class Character extends MovableObject {
 
         // kleine Pause (optional), dann zurück zur normalen Idle-Anzeige
         setTimeout(() => {
-          // Reset: zeige wieder Standard-Idle (erstes Idle-Bild)
+          // Wenn Salsa-Flaschen vorhanden sind, werfe eine
+          if (this.world.statusBarSalsa.salsaCount > 0) {
+            this.world.statusBarSalsa.salsaCount--;
+
+            // Neue Salsa-Flasche erzeugen
+            const offsetX = this.otherDirection ? -50 : 100;
+            const salsa = new SalsaThrow(this.x + offsetX, this.y + 60, this.otherDirection);
+            this.world.throwableObjects.push(salsa);
+
+            // Optional: Wurf-Sound (bereits in throwSound enthalten)
+          }
+
+          // Reset zurück zur Idle-Animation
           this.loadImage(this.IMAGES_IDLE[0]);
           this.animationFinished = true;
           this.isThrowing = false;
-        }, 50); // 50ms kleine Puffer-Zeit
+        }, 50);
       }
     }, frameDuration);
   }

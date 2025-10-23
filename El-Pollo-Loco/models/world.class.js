@@ -13,6 +13,8 @@ class World {
   chickenNest = new ChickenNest();
   coins = []; // mehrere Münzen statt einer
   salsas = []; // mehrere Salsaflaschen
+  throwableObjects = [];
+
 
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext("2d");
@@ -267,6 +269,7 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
+
     this.addToMap(this.chickenNest);
 
     if (this.corncob) {
@@ -275,7 +278,7 @@ class World {
 
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
-
+    this.addObjectsToMap(this.throwableObjects);
     this.ctx.translate(-this.camera_x, 0); // Reset the camera position
 
     let self = this;
@@ -330,7 +333,7 @@ class World {
   generateSalsas() {
     const salsas = [];
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 10; i++) {
       let salsaX = 500 + Math.random() * 4000; // zufällige Position im Level
       let salsaY = 380 + Math.random() * 30;   // leicht variierende Höhe
       salsas.push(new Salsa(salsaX, salsaY));

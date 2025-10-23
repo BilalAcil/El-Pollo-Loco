@@ -8,7 +8,7 @@ class StatusBarSalsa extends DrawableObject {
     this.width = 80;
     this.x = 55;
     this.y = 25;
-    this.salsaCount = 0; // Besserer Name
+    this.salsaCount = 0; // Anfangsanzahl der Salsaflaschen
   }
 
   addSalsa() {
