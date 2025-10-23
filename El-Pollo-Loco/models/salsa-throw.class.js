@@ -51,4 +51,12 @@ class SalsaThrow extends MovableObject {
       this.playAnimation(this.IMAGES_ROTATION);
     }, 50);
   }
+
+  stopSound() {
+    if (this.rotationSound) {
+      this.rotationSound.pause();
+      this.rotationSound.currentTime = 0;
+    }
+  }
+
 }

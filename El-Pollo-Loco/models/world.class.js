@@ -182,6 +182,8 @@ class World {
         this.level.enemies.forEach((enemy) => {
           if (enemy instanceof Endboss && !enemy.isDead && salsa.isColliding(enemy)) {
 
+            salsa.stopSound(); // 🎧 Sound sofort stoppen
+
             // ✅ Endboss wird aktiviert & verliert Energie
             enemy.activate();
             enemy.energy = (enemy.energy || 100) - 20;
