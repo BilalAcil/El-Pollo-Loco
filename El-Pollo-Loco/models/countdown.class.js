@@ -13,21 +13,26 @@ class Countdown extends DrawableObject {
     this.countdownInterval = null;
 
     // 🎶 Zwei Hintergrundmusiken
-    // this.bgMusic1 = new Audio('audio/background-sound-1.mp3');
-    // this.bgMusic2 = new Audio('audio/background-sound-2.mp3');
+    this.bgMusic1 = new Audio('audio/background-sound-1.mp3');
+    this.bgMusic2 = new Audio('audio/background-sound-2.mp3');
 
     // Beide Musikstücke auf Dauerschleife und Lautstärke einstellen
-    // this.bgMusic1.loop = true;
-    // this.bgMusic2.loop = true;
-    // this.bgMusic1.volume = 0.4; // etwas leiser
-    // this.bgMusic2.volume = 0.6; // etwas stärker
+    this.bgMusic1.loop = true;
+    this.bgMusic2.loop = true;
+    this.bgMusic1.volume = 0.4; // etwas leiser
+    this.bgMusic2.volume = 0.6; // etwas stärker
+
+    // 🎶 Endboss-Musik
+    this.endBossMusic = new Audio('audio/endBoss-breich.mp3');
+    this.endBossMusic.loop = true;
+    this.endBossMusic.volume = 0.7;
 
     this.startCountdown();
   }
 
   startCountdown() {
     // 🎵 Beide Hintergrundmusiken gleichzeitig starten
-    // this.playBackgroundMusic();
+    this.playBackgroundMusic();
 
     this.countdownInterval = setInterval(() => {
       this.countdownTime--;
@@ -48,15 +53,15 @@ class Countdown extends DrawableObject {
 
   // 🎧 Hintergrundmusik starten
   playBackgroundMusic() {
-    // this.bgMusic1.currentTime = 0;
-    // this.bgMusic2.currentTime = 0;
+    this.bgMusic1.currentTime = 0;
+    this.bgMusic2.currentTime = 0;
 
     // Schnellere Wiedergabe, falls du willst
-    // this.bgMusic1.playbackRate = 1.0;
-    // this.bgMusic2.playbackRate = 1.0;
+    this.bgMusic1.playbackRate = 1.0;
+    this.bgMusic2.playbackRate = 1.0;
 
-    // this.bgMusic1.play().catch(e => console.warn(e));
-    // this.bgMusic2.play().catch(e => console.warn(e));
+    this.bgMusic1.play().catch(e => console.warn(e));
+    this.bgMusic2.play().catch(e => console.warn(e));
   }
 
   // 🛑 Countdown & Musik stoppen
@@ -68,12 +73,12 @@ class Countdown extends DrawableObject {
     this.countdownTime = 0;
 
     // Musik stoppen
-    // this.bgMusic1.pause();
-    // this.bgMusic2.pause();
+    this.bgMusic1.pause();
+    this.bgMusic2.pause();
 
     // Zeitsprung zurücksetzen, damit sie beim Neustart von vorne beginnen
-    // this.bgMusic1.currentTime = 0;
-    // this.bgMusic2.currentTime = 0;
+    this.bgMusic1.currentTime = 0;
+    this.bgMusic2.currentTime = 0;
   }
 
   formatTime() {
@@ -81,6 +86,20 @@ class Countdown extends DrawableObject {
     const seconds = this.countdownTime % 60;
     return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   }
+
+  // 🔊 Wechselt zur Endboss-Musik
+  playEndBossMusic() {
+    // Normale Musik stoppen
+    this.bgMusic1.pause();
+    this.bgMusic2.pause();
+    this.bgMusic1.currentTime = 0;
+    this.bgMusic2.currentTime = 0;
+
+    // Endboss-Musik starten
+    this.endBossMusic.currentTime = 0;
+    this.endBossMusic.play().catch(e => console.warn(e));
+  }
+
 
   draw(ctx) {
     super.draw(ctx);

@@ -175,9 +175,16 @@ class Character extends MovableObject {
       }
 
       // Endboss-Bereich aktivieren
-      if (this.x >= 4100) {
+      if (this.x >= 4100 && !this.atEndboss) {
         this.atEndboss = true;
+        console.log("🔥 Endboss-Bereich erreicht!");
+
+        // Endboss-Musik aktivieren
+        if (this.world && this.world.countdown) {
+          this.world.countdown.playEndBossMusic();
+        }
       }
+
 
       // Zur Idle-Animation wechseln nach Inaktivität
       if (
