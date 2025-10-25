@@ -76,6 +76,8 @@ class World {
               characterHitEndbossFromAbove = true;
               enemy.activate();
               enemy.energy = (enemy.energy || 100) - 20;
+              this.lastEndbossBounce = Date.now(); // ← Immunität für 400 ms aktivieren
+
 
               if (this.endbossBar) {
                 this.endbossBar.setPercentage(enemy.energy);
@@ -120,41 +122,60 @@ class World {
         const characterBottom = this.character.y + this.character.height;
         const enemyTop = enemy.y;
 
+        // ✳️ NEU: größere Toleranz & sichere Prüfung für "von oben"
+        const falling = this.character.speedY < 0;
+        const verticalOverlap = Math.abs(characterBottom - enemyTop);
+
         const jumpedOnEnemy =
-          this.character.isAboveGround() &&
-          this.character.speedY < 0 &&
-          characterBottom < enemyTop + 25 &&
-          characterBottom > enemyTop - 10;
+          falling &&
+          verticalOverlap < 40 && // etwas großzügiger als 10–25
+          this.character.y + this.character.height / 2 < enemy.y + enemy.height / 2; // Charakter wirklich oberhalb
 
         if (jumpedOnEnemy && !enemy.isDead) {
-          console.log("✅ Sprung auf Gegner erkannt!", enemy.constructor.name);
+          console.log("✅ Sprung auf Gegner erkannt:", enemy.constructor.name);
+
+          // Gegner sofort töten
           this.killEnemy(enemy, index);
+
+          // ✳️ Charakter "springt ab" — aber mit leichtem Cooldown
+          this.character.speedY = 15;
+          this.lastEnemyBounce = Date.now();
+
           characterJumpedOnEnemy = true;
         }
       });
+
 
       // Charakter springt ab
       if (characterJumpedOnEnemy) {
         this.character.speedY = 15;
       }
 
-      // 🔥 KORRIGIERT: Endboss mit COOLDOWN
-      if (!characterHitEndbossFromAbove) {
+      // 🔥 KORRIGIERT & VERBESSERT: Endboss mit COOLDOWN und Bounce-Immunität
+      const recentlyBouncedOnEndboss =
+        this.lastEndbossBounce && Date.now() - this.lastEndbossBounce < 400;
+
+      if (!characterHitEndbossFromAbove && !recentlyBouncedOnEndboss) {
         this.level.enemies.forEach((enemy) => {
           if (enemy instanceof Endboss && this.character.isColliding(enemy) && !enemy.isDead) {
-            // 🔥 COOLDOWN für Endboss-Treffer
             const now = Date.now();
+            // 🔥 COOLDOWN für Endboss-Treffer
             if (!this.lastEndbossHit || now - this.lastEndbossHit > 1000) {
               this.lastEndbossHit = now;
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
+              console.log("💥 Schaden durch Endboss-Kollision!");
             }
           }
         });
       }
 
+
       // 🔥 VERBESSERT: Normale Gegner mit COOLDOWN
-      if (!characterJumpedOnEnemy) {
+      // 👇 verhindert, dass sofort nach einem Sprung Schaden ausgelöst wird
+      const recentlyBounced = this.lastEnemyBounce && Date.now() - this.lastEnemyBounce < 200;
+
+      if (!characterJumpedOnEnemy && !recentlyBounced) {
         collidedEnemies.forEach(({ enemy }) => {
           if (!enemy.isDead) {
             // 🔥 COOLDOWN für normale Gegner-Treffer
