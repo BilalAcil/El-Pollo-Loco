@@ -1,5 +1,4 @@
 class EndBossStatusBar extends DrawableObject {
-
   IMAGES = [
     'img/7_statusbars/2_statusbar_endboss/blue/blue0.png',
     'img/7_statusbars/2_statusbar_endboss/blue/blue20.png',
@@ -10,9 +9,11 @@ class EndBossStatusBar extends DrawableObject {
   ];
 
   percentage = 100;
+  world;
 
-  constructor() {
+  constructor(world) {
     super();
+    this.world = world; // 🔗 Welt-Referenz speichern
     this.loadImages(this.IMAGES);
     this.height = 60;
     this.width = 200;
@@ -20,22 +21,35 @@ class EndBossStatusBar extends DrawableObject {
     this.y = 10;
     this.setPercentage(100);
 
-    // 🎵 Endboss-Hurt-Sound vorbereiten
     this.hurtSound = new Audio('audio/endboss-hurt.mp3');
     this.hurtSound.volume = 0.6;
   }
 
   setPercentage(percentage) {
-    // Prüfe, ob sich die Lebensanzeige wirklich ändert
     if (percentage < this.percentage) {
-      // 🎧 Spiele den Sound nur, wenn HP sinken
       this.hurtSound.currentTime = 0;
       this.hurtSound.play().catch(e => console.warn('Endboss Hurt Sound:', e));
     }
 
-    this.percentage = percentage;
+    this.percentage = Math.max(0, percentage); // niemals negativ
     const path = this.IMAGES[this.resolveImageIndex()];
     this.img = this.imageCache[path];
+
+    // 🧨 Prüfen, ob der Boss tot ist → Statusbar entfernen
+    if (this.percentage <= 0) {
+      this.removeFromWorld();
+    }
+  }
+
+  removeFromWorld() {
+    // 🔥 Zentraler Ort, um die Statusbar zu entfernen
+    if (this.world && this.world.level && this.world.level.enemies) {
+      const index = this.world.level.enemies.indexOf(this);
+      if (index > -1) {
+        this.world.level.enemies.splice(index, 1);
+        console.log("🗑️ Endboss-Statusbar entfernt!");
+      }
+    }
   }
 
   resolveImageIndex() {

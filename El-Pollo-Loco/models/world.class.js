@@ -27,6 +27,7 @@ class World {
     this.lastEnemyHit = 0;    // Zeitpunkt des letzten Gegner-Treffers
     this.lastEndbossHit = 0;  // Zeitpunkt des letzten Endboss-Treffers
 
+
     // Vorladen des Heilungssounds
     this.healSound = new Audio('audio/heart-1.mp3');
     this.healSound.volume = 0.5;
@@ -47,6 +48,9 @@ class World {
     // Endboss & StatusBar Referenz setzen
     this.endboss = this.level.enemies.find(e => e instanceof Endboss);
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
+    if (this.endbossBar) {
+      this.endbossBar.world = this;
+    }
   }
 
   checkCollisions() {
@@ -184,7 +188,7 @@ class World {
             enemy.activate();
             enemy.energy = (enemy.energy || 100) - 20;
 
-            // 🎵 Treffer-Sound (du kannst einen eigenen Sound nehmen)
+            // 🎵 Treffer-Sound 
             const hitSound = new Audio('audio/hit-sound.mp3');
             hitSound.volume = 0.5;
             hitSound.play().catch(e => console.warn('Hit sound error:', e));
