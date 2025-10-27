@@ -2,6 +2,7 @@ class SalsaThrow extends MovableObject {
   width = 50;
   height = 50;
   speedY = 10;
+  hasHit = false;
   acceleration = 1;
   direction; // true = nach links, false = nach rechts
 
@@ -23,12 +24,12 @@ class SalsaThrow extends MovableObject {
   constructor(x, y, direction) {
     super().loadImage(this.IMAGES_ROTATION[0]);
     this.loadImages(this.IMAGES_ROTATION);
+    this.loadImages(this.IMAGES_SPLASH);
     this.x = x;
     this.y = y;
     this.direction = direction;
-    this.speedX = 10; // Wurfgeschwindigkeit
+    this.speedX = 10;
 
-    // 🎵 Sound vorbereiten
     this.rotationSound = new Audio('audio/throw-sound-2.mp3');
     this.rotationSound.volume = 0.4;
 
@@ -37,16 +38,13 @@ class SalsaThrow extends MovableObject {
 
   /** Bewegung + Rotation **/
   throw() {
-    this.speedY = 5; // Start-Höhe
+    this.speedY = 5;
     this.applyGravity();
 
-
-    // 🎧 Starte Rotations-Sound beim Flugbeginn
     this.rotationSound.currentTime = 0;
     this.rotationSound.play().catch(e => console.warn('Rotation sound error:', e));
 
-    setInterval(() => {
-      // Richtung des Wurfs
+    this.moveInterval = setInterval(() => {
       if (this.direction) {
         this.x -= this.speedX;
       } else {
@@ -54,8 +52,7 @@ class SalsaThrow extends MovableObject {
       }
     }, 25);
 
-    // Rotation der Flasche
-    setInterval(() => {
+    this.rotationInterval = setInterval(() => {
       this.playAnimation(this.IMAGES_ROTATION);
     }, 50);
   }
@@ -67,4 +64,22 @@ class SalsaThrow extends MovableObject {
     }
   }
 
+  /** 💥 Splash-Animation **/
+  splashAnimation(callback) {
+    this.stopSound();
+    clearInterval(this.moveInterval);
+    clearInterval(this.rotationInterval);
+    this.speedY = 0;
+    this.speedX = 0;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      this.loadImage(this.IMAGES_SPLASH[i]);
+      i++;
+      if (i >= this.IMAGES_SPLASH.length) {
+        clearInterval(interval);
+        if (callback) callback(); // Danach Objekt entfernen
+      }
+    }, 100);
+  }
 }

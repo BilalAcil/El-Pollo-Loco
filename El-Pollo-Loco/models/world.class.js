@@ -200,24 +200,29 @@ class World {
       // 💥 Salsa-Flaschen treffen Endboss
       this.throwableObjects.forEach((salsa, index) => {
         this.level.enemies.forEach((enemy) => {
-          if (enemy instanceof Endboss && !enemy.isDead && salsa.isColliding(enemy)) {
+          if (
+            enemy instanceof Endboss &&
+            !enemy.isDead &&
+            !salsa.hasHit && // 👉 nur, wenn sie noch nicht getroffen hat
+            salsa.isColliding(enemy)
+          ) {
 
-            salsa.stopSound(); // 🎧 Sound sofort stoppen
-
+            salsa.hasHit = true; // 👉 markiere als benutzt
+            salsa.stopSound();   // 🎧 Sound sofort stoppen
 
             // ✅ Endboss wird aktiviert & verliert Energie
             enemy.activate();
             enemy.energy = (enemy.energy || 100) - 20;
 
-            // 🎵 Treffer-Sound 
+            // 🎵 Treffer-Sound
             const hitSound = new Audio('audio/hit-sound.mp3');
             hitSound.volume = 0.5;
             hitSound.play().catch(e => console.warn('Hit sound error:', e));
 
-
-
-            // ⚡ Salsa-Flasche entfernen
-            this.throwableObjects.splice(index, 1);
+            // 💥 Splash-Animation
+            salsa.splashAnimation(() => {
+              this.throwableObjects.splice(index, 1);
+            });
 
             // 🔋 Statusbar aktualisieren
             if (this.endbossBar) {
@@ -240,6 +245,7 @@ class World {
           }
         });
       });
+
 
 
       // Rest deines Codes für Items...
