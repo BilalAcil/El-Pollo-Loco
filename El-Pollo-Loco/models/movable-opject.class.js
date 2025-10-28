@@ -93,7 +93,7 @@ class MovableObject extends DrawableObject {
 
     // Schmerz-Sound nur abspielen, wenn 2 Sekunden seit dem letzten Abspielen vergangen sind
     const now = new Date().getTime();
-    if (!this.lastPainSoundTime || now - this.lastPainSoundTime >= 2000) {
+    if (!this.lastPainSoundTime || now - this.lastPainSoundTime >= 1300) {
       this.lastPainSoundTime = now;
       this.painSound.currentTime = 0;
       this.painSound.playbackRate = 1.2;
