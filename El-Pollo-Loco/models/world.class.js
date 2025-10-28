@@ -181,7 +181,7 @@ class World {
             const now = Date.now();
 
             // 🛡️ GLOBALER TREFFER-COOLDOWN (gilt für alle Gegner)
-            const recentlyHit = this.character.lastGlobalHit && now - this.character.lastGlobalHit < 1000;
+            const recentlyHit = this.character.lastGlobalHit && now - this.character.lastGlobalHit < 1300;
             if (recentlyHit) {
               return; // während der Immunzeit kein weiterer Schaden
             }
