@@ -45,11 +45,14 @@ class Character extends MovableObject {
     'img/2_character_pepe/3_jump/J-32.png',
     'img/2_character_pepe/3_jump/J-33.png',
     'img/2_character_pepe/3_jump/J-34.png',
-    'img/2_character_pepe/3_jump/J-35.png',
+    'img/2_character_pepe/3_jump/J-35.png'
+  ];
+
+  IMAGES_FALLING = [
     'img/2_character_pepe/3_jump/J-36.png',
     'img/2_character_pepe/3_jump/J-37.png',
     'img/2_character_pepe/3_jump/J-38.png',
-    'img/2_character_pepe/3_jump/J-39.png',
+    'img/2_character_pepe/3_jump/J-39.png'
   ];
 
   IMAGES_DEAD = [
@@ -215,7 +218,8 @@ class Character extends MovableObject {
         this.playAnimation(this.IMAGES_HURT);
       } else if (this.isAboveGround()) {
         this.stopLongIdleAnimation();
-        this.playAnimation(this.IMAGES_JUMPING);
+        // HIER DIE ÄNDERUNG: handleJumpAnimation() statt playAnimation()
+        this.handleJumpAnimation(); // ← GEÄNDERT
       } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_WALKING);
@@ -233,6 +237,23 @@ class Character extends MovableObject {
       }
     }, 50);
 
+  }
+
+  handleJumpAnimation() {
+    if (this.speedY > 0) {
+      // Springen - zeige Bilder basierend auf Fortschritt
+      const progress = Math.min(1, this.speedY / 1); // Angepasst für realistischere Progression
+      const frameIndex = Math.floor(progress * (this.IMAGES_JUMPING.length - 1));
+      this.loadImage(this.IMAGES_JUMPING[frameIndex]);
+    } else if (this.speedY < 0) {
+      // Fallen - zeige Bilder basierend auf Fallgeschwindigkeit
+      const progress = Math.min(1, Math.abs(this.speedY) / 20);
+      const frameIndex = Math.floor(progress * (this.IMAGES_FALLING.length - 1));
+      this.loadImage(this.IMAGES_FALLING[frameIndex]);
+    } else {
+      // Höchster Punkt
+      this.loadImage(this.IMAGES_JUMPING[this.IMAGES_JUMPING.length - 1]);
+    }
   }
 
   handleMovement() {
