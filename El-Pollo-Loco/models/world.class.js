@@ -178,10 +178,19 @@ class World {
       if (!characterJumpedOnEnemy && !recentlyBounced) {
         collidedEnemies.forEach(({ enemy }) => {
           if (!enemy.isDead) {
-            // 🔥 COOLDOWN für normale Gegner-Treffer
             const now = Date.now();
+
+            // 🛡️ GLOBALER TREFFER-COOLDOWN (gilt für alle Gegner)
+            const recentlyHit = this.character.lastGlobalHit && now - this.character.lastGlobalHit < 1000;
+            if (recentlyHit) {
+              return; // während der Immunzeit kein weiterer Schaden
+            }
+
+            // 🔥 Bisheriger Gegner-spezifischer Cooldown
             if (!this.lastEnemyHit || now - this.lastEnemyHit > 800) {
               this.lastEnemyHit = now;
+              this.character.lastGlobalHit = now; // 🕒 Zeitpunkt global speichern
+
               console.log("❌ Seitliche Kollision mit", enemy.constructor.name);
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
@@ -196,6 +205,7 @@ class World {
           }
         });
       }
+
 
       // 💥 Salsa-Flaschen treffen Endboss
       this.throwableObjects.forEach((salsa, index) => {

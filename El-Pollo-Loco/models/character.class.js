@@ -93,6 +93,7 @@ class Character extends MovableObject {
     this.applyGravity();
     this.atEndboss = false;
     this.animate();
+    this.lastGlobalHit = 0;
     this.throwSound = new Audio('audio/throw-sound-1.mp3');
     this.throwSound.volume = 0.4; // etwas leiser
     // this.idleImage = 'img/2_character_pepe/1_idle/idle/I-1.png';
