@@ -87,13 +87,11 @@ class World {
 
               if (enemy.energy <= 0) {
                 enemy.isDead = true;
-                console.log("🎉 Endboss besiegt!");
 
                 setTimeout(() => {
                   const index = this.level.enemies.indexOf(enemy);
                   if (index > -1) {
                     this.level.enemies.splice(index, 1);
-                    console.log("🗑️ Endboss wurde entfernt!");
 
                     if (this.endbossBar) {
                       const barIndex = this.level.enemies.indexOf(this.endbossBar);
@@ -132,7 +130,6 @@ class World {
           this.character.y + this.character.height / 2 < enemy.y + enemy.height / 2; // Charakter wirklich oberhalb
 
         if (jumpedOnEnemy && !enemy.isDead) {
-          console.log("✅ Sprung auf Gegner erkannt:", enemy.constructor.name);
 
           // Gegner sofort töten
           this.killEnemy(enemy, index);
@@ -164,7 +161,6 @@ class World {
               this.lastEndbossHit = now;
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
-              console.log("💥 Schaden durch Endboss-Kollision!");
             }
           }
         });
@@ -191,7 +187,6 @@ class World {
               this.lastEnemyHit = now;
               this.character.lastGlobalHit = now; // 🕒 Zeitpunkt global speichern
 
-              console.log("❌ Seitliche Kollision mit", enemy.constructor.name);
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
 
@@ -242,13 +237,11 @@ class World {
             // 🧨 Endboss tot?
             if (enemy.energy <= 0) {
               enemy.isDead = true;
-              console.log("🎯 Endboss mit Salsa besiegt!");
 
               setTimeout(() => {
                 const enemyIndex = this.level.enemies.indexOf(enemy);
                 if (enemyIndex > -1) {
                   this.level.enemies.splice(enemyIndex, 1);
-                  console.log("🗑️ Endboss entfernt!");
                 }
               }, 1500);
             }
@@ -414,7 +407,7 @@ class World {
   generateSalsas() {
     const salsas = [];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       let salsaX = 500 + Math.random() * 4000; // zufällige Position im Level
       let salsaY = 380 + Math.random() * 30;   // leicht variierende Höhe
       salsas.push(new Salsa(salsaX, salsaY));

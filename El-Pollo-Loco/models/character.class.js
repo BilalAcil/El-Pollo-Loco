@@ -181,7 +181,6 @@ class Character extends MovableObject {
       // Endboss-Bereich aktivieren
       if (this.x >= 4100 && !this.atEndboss) {
         this.atEndboss = true;
-        console.log("🔥 Endboss-Bereich erreicht!");
 
         // Endboss-Musik aktivieren
         if (this.world && this.world.countdown) {

@@ -8,6 +8,6 @@ class Corncob extends MovableObject {
   constructor() {
     super();
     this.loadImage(this.IMAGE);
-    this.x = 3800
+    this.x = 4300
   }
 }

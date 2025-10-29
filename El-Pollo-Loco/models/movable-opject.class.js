@@ -32,7 +32,6 @@ class MovableObject extends DrawableObject {
 
         // Übergang von Steigen -> Fallen erkennen (Apex)
         if (warAmSteigen && this.speedY <= 0) {
-          console.log("Sprunghöhe erreicht bei Y:", this.y);
         }
 
       }
