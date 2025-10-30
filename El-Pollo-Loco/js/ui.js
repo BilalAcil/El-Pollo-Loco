@@ -7,12 +7,14 @@ function init() {
   // Beim Laden: Startbildschirm anzeigen
   document.getElementById('start-screen').classList.remove('hidden');
   document.getElementById('canvas').style.display = 'none';
+  document.getElementById('game-name').style.display = 'none';
 }
 
 /**
  * Startet das Spiel, wenn "Spielen" gedrückt wird
  */
 function startGame() {
+  document.getElementById('game-name').style.display = 'block';
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('canvas').style.display = 'block';
   document.getElementById('end-screen').classList.add('hidden');

@@ -66,7 +66,7 @@ h2 {
 
 .menu-box {
   background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgb(255, 204, 0);
+  border: 2px solid rgb(253, 164, 7);
   border-radius: 12px;
   padding: 20px 40px;
   text-align: center;
@@ -77,7 +77,8 @@ button {
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
-  margin: 10px;
+  width: 156px;
+  margin: 24px 0;
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
@@ -112,4 +113,10 @@ button:hover {
 
 .hidden {
   display: none !important;
+}
+
+.menu-img {
+  height: 100px;
+  display: flex;
+  justify-content: space-evenly;
 }
