@@ -4,6 +4,7 @@ class Character extends MovableObject {
   width = 120;
   y = 0;
   speed = 10;
+  isDying = false; // Neue Variable, um mehrfaches Auslösen zu verhindern
 
   IMAGES_IDLE = [
     'img/2_character_pepe/1_idle/idle/I-1.png',
@@ -57,12 +58,8 @@ class Character extends MovableObject {
 
   IMAGES_DEAD = [
     'img/2_character_pepe/5_dead/D-51.png',
-    'img/2_character_pepe/5_dead/D-52.png',
     'img/2_character_pepe/5_dead/D-53.png',
-    'img/2_character_pepe/5_dead/D-54.png',
-    'img/2_character_pepe/5_dead/D-55.png',
-    'img/2_character_pepe/5_dead/D-56.png',
-    'img/2_character_pepe/5_dead/D-57.png'
+    'img/2_character_pepe/5_dead/D-54.png'
   ];
 
   IMAGES_HURT = [
@@ -211,7 +208,7 @@ class Character extends MovableObject {
 
       if (this.isDead()) {
         this.stopLongIdleAnimation();
-        this.playAnimation(this.IMAGES_DEAD);
+        this.playDeathAnimation();
       } else if (this.isHurt()) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_HURT);
@@ -366,10 +363,86 @@ class Character extends MovableObject {
     }, 200);
   }
 
+
+
+  // 🧩 NEU: Todesanimation (Pepe rutscht aus dem Bild)
+  playDeathAnimation() {
+    if (this.isDying) return; // Mehrfaches Starten verhindern
+    this.isDying = true;
+    this.animationFinished = false;
+
+    // 🎵 Death sound
+    setTimeout(() => {
+      this.deathSound = new Audio('audio/dead-sound.mp3');
+      this.deathSound.volume = 0.6;
+      this.deathSound.play().catch(e => console.warn('Death sound error:', e));
+    }, 500);
+
+    let frameIndex = 0;
+    const frameInterval = 250; // Zeit pro Frame (ms)
+    let fallVelocity = 0;
+    const gravity = 0.5; // Wie schnell Pepe nach unten fällt
+
+    const deathInterval = setInterval(() => {
+      // 1️⃣ Todesbilder nacheinander abspielen
+      if (frameIndex < this.IMAGES_DEAD.length) {
+        this.loadImage(this.IMAGES_DEAD[frameIndex]);
+        frameIndex++;
+      }
+
+      // 2️⃣ Pepe langsam nach unten bewegen
+      fallVelocity += gravity;
+      this.y += fallVelocity;
+
+      // 3️⃣ Wenn Pepe aus dem Bild ist → stoppen
+      if (this.y > 480 || frameIndex >= this.IMAGES_DEAD.length) {
+        clearInterval(deathInterval);
+        this.animationFinished = true;
+        this.loadImage(this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]);
+      }
+    }, frameInterval);
+  }
+
+  // ★★★ NEW METHOD: Let Pepe fall when dead ★★★
+  startFallingWhenDead() {
+    // Stop multiple intervals
+    if (this.fallingInterval) return;
+
+    this.fallingInterval = setInterval(() => {
+      if (this.isDead || this.isDying) {
+        this.y += 3; // speed of the fall
+
+        // remove when fully off-screen
+        if (this.y > 600) {
+          clearInterval(this.fallingInterval);
+          this.removeFromWorld();
+        }
+      }
+    }, 1000 / 30); // 30 FPS
+  }
+
+  // ★★★ NEW METHOD: Remove from world ★★★
+  removeFromWorld() {
+    if (this.world) {
+      const index = this.world.level.enemies.indexOf(this);
+      if (index > -1) {
+        this.world.level.enemies.splice(index, 1);
+        console.log("🗑️ Pepe removed from world!");
+      }
+    }
+  }
+
+
+
   applyGravity() {
     setInterval(() => {
-      let previousY = this.y; // Vorherige Position speichern
-      let previousSpeedY = this.speedY; // Vorherige Geschwindigkeit speichern
+      // 🧠 Wenn Pepe stirbt oder tot ist → keine Gravitation mehr
+      if (this.isDead() || this.isDying) {
+        return;
+      }
+
+      let previousY = this.y;
+      let previousSpeedY = this.speedY;
 
       // Gravity anwenden
       if (this.isAboveGround() || this.speedY > 0) {
@@ -379,22 +452,10 @@ class Character extends MovableObject {
 
       // Character auf Boden-Position fixieren
       if (!this.isAboveGround() && this.speedY <= 0) {
-        this.y = 155; // Auf exakte Boden-Position setzen
-        this.speedY = 0; // Fallgeschwindigkeit zurücksetzen
+        this.y = 155;
+        this.speedY = 0;
       }
-
-      // // Y-Wert nach dem Fallen anzeigen
-      // if (previousSpeedY > 0 && this.speedY <= 0) {
-      //   console.log("✅ Fall beendet! End-Y-Position:", this.y,
-      //     "Gefallen von Y:", previousY, "zu Y:", this.y);
-      // }
-
-      // // Auf dem Boden
-      // if (!this.isAboveGround()) {
-      //   if (previousY !== this.y) {
-      //     console.log("🏁 Auf dem Boden gelandet! Y-Position:", this.y);
-      //   }
-      // }
     }, 1000 / 25);
   }
+
 }

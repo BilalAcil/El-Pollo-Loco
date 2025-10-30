@@ -192,9 +192,13 @@ class World {
 
               if (this.character.energy <= 0) {
                 this.character.isDead = true;
-                this.character.playAnimation(this.character.IMAGES_DEAD);
                 this.statusBar.setPercentage(0);
+
+                // 👉 Death animation + falling start
+                this.character.playDeathAnimation();
+                this.character.startFallingWhenDead();
               }
+
             }
             return;
           }
