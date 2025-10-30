@@ -156,16 +156,25 @@ class World {
         this.level.enemies.forEach((enemy) => {
           if (enemy instanceof Endboss && this.character.isColliding(enemy) && !enemy.isDead) {
             const now = Date.now();
-            // 🔥 COOLDOWN für Endboss-Treffer
             if (!this.lastEndbossHit || now - this.lastEndbossHit > 1000) {
               this.lastEndbossHit = now;
+
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
+
+              // 🧩 HIER NEU:
+              if (this.character.energy <= 0) {
+                this.character.isDead = true;
+                this.statusBar.setPercentage(0);
+
+                // 👉 Todesanimation + Fallen starten
+                this.character.playDeathAnimation();
+                this.character.startFallingWhenDead();
+              }
             }
           }
         });
       }
-
 
       // 🔥 VERBESSERT: Normale Gegner mit COOLDOWN
       // 👇 verhindert, dass sofort nach einem Sprung Schaden ausgelöst wird
