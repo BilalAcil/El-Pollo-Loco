@@ -9,6 +9,47 @@
   <link rel="icon" type="image/x-icon" href="img/favicon/pngtree-aesthetic-cactus-png-image_9001658.png">
   <link rel="stylesheet" href="./style.css">
 
+</head>
+
+<body>
+  <h1>EL POLLO LOCO</h1>
+  <canvas id="canvas" width="720" height="480"></canvas>
+
+  <!-- STARTSCREEN -->
+  <div id="start-screen" class="overlay">
+    <div class="menu-box">
+      <h2>Das Huhn wartet, Amigo!</h2>
+      <button onclick="startGame()">🎮 Spiel starten</button>
+      <button onclick="openInstructions()">ℹ️ Anleitung</button>
+      <button id="mute-btn" onclick="toggleMute()">🔊 Ton aus</button>
+    </div>
+  </div>
+
+  <!-- ANLEITUNG -->
+  <div id="instructions" class="dialog hidden">
+    <div class="dialog-content">
+      <h3>Spielerklärung & Tastenbelegung</h3>
+      <p>
+        Ziel: Sammle alle Münzen, besiege Gegner und überlebe!<br><br>
+        <b>Tasten:</b><br>
+        ⬅️ / ➡️ Bewegung<br>
+        🦶 Leertaste – Springen<br>
+        🍅 D – Salsa werfen<br>
+        ⏸️ M – Ton an/aus
+      </p>
+      <button onclick="closeInstructions()">❌ Schließen</button>
+    </div>
+  </div>
+
+  <!-- ENDSCREEN -->
+  <div id="end-screen" class="overlay hidden">
+    <div class="menu-box">
+      <h2 id="end-message">Spiel beendet!</h2>
+      <button onclick="restartGame()">🔁 Nochmal spielen</button>
+      <button onclick="returnToHome()">🏠 Zurück zum Start</button>
+    </div>
+  </div>
+
   <!-- Basis-Klassen -->
   <script src="./models/drawable-object.class.js"></script>
   <script src="./models/movable-opject.class.js"></script>
@@ -33,19 +74,15 @@
 
   <!-- Level und World -->
   <script src="./models/level.class.js"></script>
+  <script src="./js/levels/level1.js"></script>
   <script src="./models/world.class.js"></script>
 
   <!-- Steuerung + Spielstart -->
   <script src="./models/keyboard.class.js"></script>
-  <script src="./js/levels/level1.js"></script>
+
   <script src="./js/game.js"></script>
-</head>
-
-<body onload="init()">
-  <h1>EL POLLO LOCO</h1>
-  <canvas id="canvas" width="720" height="480">
-
-  </canvas>
+  <script src="./js/ui.js"></script>
 </body>
+
 
 </html>

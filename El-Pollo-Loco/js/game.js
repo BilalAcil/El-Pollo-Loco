@@ -1,36 +1,50 @@
-let canvas;
-let world;
-let keyboard = new Keyboard();
+// === Globale Variablen ===
+var canvas;
+var world;
+var keyboard = new Keyboard();
 
+/**
+ * Wird beim Laden der Seite aufgerufen,
+ * aber startet das Spiel noch nicht.
+ */
 function init() {
   canvas = document.getElementById('canvas');
-  world = new World(canvas, keyboard);
+  if (!canvas) {
+    console.error("❌ Canvas nicht gefunden!");
+    return;
+  }
 
-  ctx = canvas.getContext('2d');
-
+  console.log("✅ Canvas gefunden:", canvas);
 }
 
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight') {
-    keyboard.RIGHT = true;
-  }
-  if (e.key === 'ArrowLeft') {
-    keyboard.LEFT = true;
-  }
-  if (e.key === 'ArrowUp') {
-    keyboard.UP = true;
-  }
-  if (e.key === 'ArrowDown') {
-    keyboard.DOWN = true;
-  }
-  if (e.key === ' ') {  // Leerzeichen für Space
-    keyboard.SPACE = true;
-  }
-  if (e.key === 'd' || e.key === 'D') {  // Taste D für Wurf
-    keyboard.D = true;
-  }
-});
+/**
+ * Wird von ui.js aufgerufen, wenn der Spieler „Start“ klickt
+ */
+function startGameLogic() {
+  canvas = document.getElementById('canvas');
+  world = new World(canvas, keyboard);
+  console.log("🎮 Spiel gestartet!");
+}
 
+/**
+ * Stoppt das Spiel (z. B. bei Game Over)
+ */
+function stopGame() {
+  if (world && world.stop) {
+    world.stop();
+  }
+  world = null;
+}
+
+// === Tasteneingaben erfassen ===
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') keyboard.RIGHT = true;
+  if (e.key === 'ArrowLeft') keyboard.LEFT = true;
+  if (e.key === 'ArrowUp') keyboard.UP = true;
+  if (e.key === 'ArrowDown') keyboard.DOWN = true;
+  if (e.key === ' ') keyboard.SPACE = true;
+  if (e.key === 'd' || e.key === 'D') keyboard.D = true;
+});
 
 window.addEventListener('keyup', (e) => {
   if (e.key === 'ArrowRight') keyboard.RIGHT = false;
