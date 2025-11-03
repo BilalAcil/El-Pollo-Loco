@@ -254,7 +254,7 @@ class World {
               }
 
             } else if (enemy instanceof Chicken || enemy instanceof ChickenSmall) {
-              // 🐔 Salsa-Todesanimation mit Blinken
+              // 🐔 Salsa-Todesanimation mit weichem Blinken
               enemy.isDead = true;
 
               // Bild setzen
@@ -264,16 +264,22 @@ class World {
                 enemy.loadImage('img/3_enemies_chicken/chicken_small/salsa-dead/dead.png');
               }
 
-              // 🔆 Sichtbarkeit toggeln (blinken)
-              let blinkCount = 0;
+              // Transparenz-Wert (1 = voll sichtbar)
+              enemy.alpha = 1.0;
+
+              // ✨ Sanftes Blinken über 1 Sekunde → 2 Zyklen
+              let blinkPhase = 0;
               const blinkInterval = setInterval(() => {
-                enemy.visible = !enemy.visible; // Einfaches Sichtbarkeits-Flag
-                blinkCount++;
-                if (blinkCount >= 4) { // 4 Wechsel = 2x Blinken (an-aus-an-aus)
+                // Sinuswelle für weiches Pulsieren
+                const t = (blinkPhase % 20) / 20;          // 0 → 1
+                enemy.alpha = 0.3 + Math.abs(Math.sin(t * Math.PI)) * 0.7;
+                blinkPhase++;
+
+                if (blinkPhase >= 40) { // ~1 Sekunde (20 Hz × 50 ms)
                   clearInterval(blinkInterval);
-                  enemy.visible = true; // Am Ende wieder sichtbar lassen
+                  enemy.alpha = 1.0; // wieder volle Sichtbarkeit
                 }
-              }, 250); // alle 250ms wechseln → 2x in ca. 1 Sekunde
+              }, 50);
 
               // ⏳ Nach 1 Sekunde komplett entfernen
               setTimeout(() => {
@@ -430,33 +436,33 @@ class World {
   }
 
   addToMap(mo) {
-    // 👇 NEU: Wenn das Objekt gerade unsichtbar (z. B. beim Blinken) ist → nicht zeichnen
+    // 🔒 Unsichtbare Objekte gar nicht zeichnen
     if (mo.visible === false) return;
 
     this.ctx.save();
 
-    // Wenn das Objekt gedreht werden soll:
+    // 🌫 Transparenz (standard = 1.0)
+    this.ctx.globalAlpha = mo.alpha !== undefined ? mo.alpha : 1.0;
+
     const rotation = mo.rotation ? mo.rotation * Math.PI / 180 : 0;
 
     if (mo.otherDirection) {
-      // 🔄 Gespiegelte (nach links schauende) Variante
       this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
-      this.ctx.scale(-1, 1); // horizontal spiegeln
+      this.ctx.scale(-1, 1);
       this.ctx.rotate(rotation);
       this.ctx.translate(-mo.width / 2, -mo.height / 2);
     } else {
-      // 🔄 Normale Richtung
       this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
       this.ctx.rotate(rotation);
       this.ctx.translate(-mo.width / 2, -mo.height / 2);
     }
 
-    // Bild zeichnen
     mo.draw(this.ctx);
-    mo.drawFrame(this.ctx); // optionaler Rahmen
+    mo.drawFrame(this.ctx);
 
     this.ctx.restore();
   }
+
 
 
   generateCoins() {
