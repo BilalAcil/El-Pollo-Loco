@@ -84,26 +84,27 @@ class World {
               characterHitEndbossFromAbove = true;
               enemy.activate();
               enemy.energy = (enemy.energy || 100) - 20;
-              this.lastEndbossBounce = Date.now(); // ← Immunität für 400 ms aktivieren
-
+              this.lastEndbossBounce = Date.now();
 
               if (this.endbossBar) {
                 this.endbossBar.setPercentage(enemy.energy);
               }
 
-              this.character.speedY = 20;
+              // 🧩 NEU: Rückstoß nach links
+              this.character.speedY = 20;       // nach oben schleudern
+              this.character.speedX = -10;      // Stoß nach links
+              this.character.knockbackActive = true; // aktiviert Bewegung
+
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
                 console.log("💀 Endboss besiegt – startet Todesanimation");
-
-                // 👉 Maracas erscheinen nach 1 Sekunde (während Boss stirbt)
                 if (enemy.onDeath) {
                   enemy.onDeath();
                 }
               }
-
             }
+
           }
 
           // 🟨 FALL 2: Normale Gegner (Chicken usw.) - AUSSCHLIESSEN von StatusBars und anderen Objekten
@@ -294,10 +295,6 @@ class World {
           }
         });
       });
-
-
-
-
 
 
 

@@ -146,6 +146,21 @@ class Character extends MovableObject {
         this.world.camera_x = -this.x + 100;
       }
 
+      // 🧩 Knockback-Bewegung automatisch verarbeiten
+      if (this.knockbackActive) {
+        this.x += this.speedX;
+
+        // Reibung / allmähliches Stoppen
+        this.speedX *= 0.9;
+
+        // Wenn fast gestoppt, Knockback beenden
+        if (Math.abs(this.speedX) < 1) {
+          this.knockbackActive = false;
+          this.speedX = 0;
+        }
+      }
+
+
       // Bewegung
       if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
         this.moveRight();
@@ -315,9 +330,6 @@ class Character extends MovableObject {
       }
     }, frameDuration);
   }
-
-
-
 
 
   startLongIdleAnimation() {
