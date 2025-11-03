@@ -268,12 +268,16 @@ class Character extends MovableObject {
       failSound.volume = 0.4;
       failSound.playbackRate = 2; // etwas schneller
       failSound.play().catch(e => console.warn('Fail sound error:', e));
+
+      // ✨ NEU: Salsa-Anzeige blinken lassen
+      this.world.statusBarSalsa.blinkOnFail();
+
       return; // ❌ keine Animation, kein Wurf
     }
 
     this.animationFinished = false;
     this.isThrowing = true;
-    this.lastActionTime = Date.now(); // verhindert dass sofort Idle startet
+    this.lastActionTime = Date.now(); // verhindert, dass sofort Idle startet
 
     // 🎵 Sound für den eigentlichen Wurf
     this.throwSound.currentTime = 0;
@@ -311,6 +315,7 @@ class Character extends MovableObject {
       }
     }, frameDuration);
   }
+
 
 
 

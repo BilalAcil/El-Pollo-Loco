@@ -216,50 +216,81 @@ class World {
       }
 
 
-      // 💥 Salsa-Flaschen treffen Endboss
+      // 💥 Salsa-Flaschen treffen Gegner (Endboss, Chicken, Küken)
       this.throwableObjects.forEach((salsa, index) => {
         this.level.enemies.forEach((enemy) => {
           if (
-            enemy instanceof Endboss &&
             !enemy.isDead &&
-            !salsa.hasHit && // 👉 nur, wenn sie noch nicht getroffen hat
+            !salsa.hasHit &&
             salsa.isColliding(enemy)
           ) {
             salsa.hasHit = true;
             salsa.stopSound();
-
-            // ✅ Endboss wird aktiviert & verliert Energie
-            enemy.activate();
-            enemy.energy = (enemy.energy || 100) - 20;
 
             // 🎵 Treffer-Sound
             const hitSound = new Audio('audio/hit-sound.mp3');
             hitSound.volume = 0.5;
             hitSound.play().catch(e => console.warn('Hit sound error:', e));
 
-            // 💥 Splash-Animation
+            // 💥 Splash-Animation der Flasche
             salsa.splashAnimation(() => {
               this.throwableObjects.splice(index, 1);
             });
 
-            // 🔋 Statusbar aktualisieren
-            if (this.endbossBar) {
-              this.endbossBar.setPercentage(enemy.energy);
-            }
+            // 🧩 Je nach Gegnertyp unterschiedlich reagieren
+            if (enemy instanceof Endboss) {
+              // 🦹‍♂️ Endboss verliert Energie
+              enemy.activate();
+              enemy.energy = (enemy.energy || 100) - 20;
 
-            // 🧨 Endboss tot?
-            if (enemy.energy <= 0 && !enemy.isDead) {
-              enemy.isDead = true;
-              console.log("💀 Endboss wurde durch Salsa besiegt!");
-
-              // 👉 Maracas erscheinen nach 1 Sekunde (während Boss stirbt)
-              if (enemy.onDeath) {
-                enemy.onDeath();
+              if (this.endbossBar) {
+                this.endbossBar.setPercentage(enemy.energy);
               }
+
+              if (enemy.energy <= 0 && !enemy.isDead) {
+                enemy.isDead = true;
+                console.log("💀 Endboss wurde durch Salsa besiegt!");
+                if (enemy.onDeath) enemy.onDeath();
+              }
+
+            } else if (enemy instanceof Chicken || enemy instanceof ChickenSmall) {
+              // 🐔 Salsa-Todesanimation mit Blinken
+              enemy.isDead = true;
+
+              // Bild setzen
+              if (enemy instanceof Chicken) {
+                enemy.loadImage('img/3_enemies_chicken/chicken_normal/2_dead/salsa-dead/dead-1.png');
+              } else {
+                enemy.loadImage('img/3_enemies_chicken/chicken_small/salsa-dead/dead.png');
+              }
+
+              // 🔆 Sichtbarkeit toggeln (blinken)
+              let blinkCount = 0;
+              const blinkInterval = setInterval(() => {
+                enemy.visible = !enemy.visible; // Einfaches Sichtbarkeits-Flag
+                blinkCount++;
+                if (blinkCount >= 4) { // 4 Wechsel = 2x Blinken (an-aus-an-aus)
+                  clearInterval(blinkInterval);
+                  enemy.visible = true; // Am Ende wieder sichtbar lassen
+                }
+              }, 250); // alle 250ms wechseln → 2x in ca. 1 Sekunde
+
+              // ⏳ Nach 1 Sekunde komplett entfernen
+              setTimeout(() => {
+                clearInterval(blinkInterval);
+                const enemyIndex = this.level.enemies.indexOf(enemy);
+                if (enemyIndex > -1) {
+                  this.level.enemies.splice(enemyIndex, 1);
+                }
+              }, 1000);
             }
+
           }
         });
       });
+
+
+
 
 
 
@@ -399,6 +430,9 @@ class World {
   }
 
   addToMap(mo) {
+    // 👇 NEU: Wenn das Objekt gerade unsichtbar (z. B. beim Blinken) ist → nicht zeichnen
+    if (mo.visible === false) return;
+
     this.ctx.save();
 
     // Wenn das Objekt gedreht werden soll:
