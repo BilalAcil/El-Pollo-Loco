@@ -9,6 +9,7 @@ class World {
   statusBar = new StatusBar(); // Assuming StatusBar is defined elsewhere
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
+  maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
   corncob = new Corncob();
   chickenNest = new ChickenNest();
   coins = []; // mehrere Münzen statt einer
@@ -43,15 +44,22 @@ class World {
 
   setWorld() {
     this.character.world = this;
-    this.coins = this.generateCoins(); // 💰 10 zufällige Münzen generieren
-    this.salsas = this.generateSalsas(); // 🌶️ Salsa-Flaschen zufällig erzeugen
+    this.coins = this.generateCoins();
+    this.salsas = this.generateSalsas();
+
     // Endboss & StatusBar Referenz setzen
     this.endboss = this.level.enemies.find(e => e instanceof Endboss);
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
+
+    if (this.endboss) {
+      this.endboss.world = this; // ✅ WICHTIG! Damit Endboss auf this.world zugreifen kann
+    }
+
     if (this.endbossBar) {
       this.endbossBar.world = this;
     }
   }
+
 
   checkCollisions() {
     setInterval(() => {
@@ -85,23 +93,16 @@ class World {
 
               this.character.speedY = 20;
 
-              if (enemy.energy <= 0) {
+              if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
+                console.log("💀 Endboss besiegt – startet Todesanimation");
 
-                setTimeout(() => {
-                  const index = this.level.enemies.indexOf(enemy);
-                  if (index > -1) {
-                    this.level.enemies.splice(index, 1);
-
-                    if (this.endbossBar) {
-                      const barIndex = this.level.enemies.indexOf(this.endbossBar);
-                      if (barIndex > -1) {
-                        this.level.enemies.splice(barIndex, 1);
-                      }
-                    }
-                  }
-                }, 1500);
+                // 👉 Maracas erscheinen nach 1 Sekunde (während Boss stirbt)
+                if (enemy.onDeath) {
+                  enemy.onDeath();
+                }
               }
+
             }
           }
 
@@ -224,9 +225,8 @@ class World {
             !salsa.hasHit && // 👉 nur, wenn sie noch nicht getroffen hat
             salsa.isColliding(enemy)
           ) {
-
-            salsa.hasHit = true; // 👉 markiere als benutzt
-            salsa.stopSound();   // 🎧 Sound sofort stoppen
+            salsa.hasHit = true;
+            salsa.stopSound();
 
             // ✅ Endboss wird aktiviert & verliert Energie
             enemy.activate();
@@ -248,19 +248,19 @@ class World {
             }
 
             // 🧨 Endboss tot?
-            if (enemy.energy <= 0) {
+            if (enemy.energy <= 0 && !enemy.isDead) {
               enemy.isDead = true;
+              console.log("💀 Endboss wurde durch Salsa besiegt!");
 
-              setTimeout(() => {
-                const enemyIndex = this.level.enemies.indexOf(enemy);
-                if (enemyIndex > -1) {
-                  this.level.enemies.splice(enemyIndex, 1);
-                }
-              }, 1500);
+              // 👉 Maracas erscheinen nach 1 Sekunde (während Boss stirbt)
+              if (enemy.onDeath) {
+                enemy.onDeath();
+              }
             }
           }
         });
       });
+
 
 
 
@@ -299,6 +299,22 @@ class World {
           salsaSound.play().catch(e => console.warn(e));
         }
       });
+
+      // 🎵 Maracas-Kollision
+      if (this.maracas && this.character.isColliding(this.maracas)) {
+        // Maracas verschwindet
+        this.maracas = null;
+
+        // Sound abspielen
+        const maracasSound = new Audio('audio/maracas.mp3');
+        maracasSound.volume = 0.6;
+        maracasSound.playbackRate = 1.0;
+        maracasSound.play().catch(e => console.warn('Maracas sound error:', e));
+
+        // Optional: hier kannst du ein Power-up, Punkte oder Animation einbauen
+      }
+
+
 
     }, 50);
   }
@@ -356,8 +372,10 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
-
     this.addToMap(this.chickenNest);
+    if (this.maracas) {
+      this.addToMap(this.maracas);
+    }
 
     if (this.corncob) {
       this.addToMap(this.corncob);
@@ -383,19 +401,29 @@ class World {
   addToMap(mo) {
     this.ctx.save();
 
+    // Wenn das Objekt gedreht werden soll:
+    const rotation = mo.rotation ? mo.rotation * Math.PI / 180 : 0;
+
     if (mo.otherDirection) {
-      this.ctx.translate(mo.x + mo.width, mo.y); // Verschiebe Ursprung zum rechten Rand des Objekts
-      this.ctx.scale(-1, 1); // Spiegle horizontal
-      mo.draw(this.ctx); // Zeichne das Objekt
+      // 🔄 Gespiegelte (nach links schauende) Variante
+      this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
+      this.ctx.scale(-1, 1); // horizontal spiegeln
+      this.ctx.rotate(rotation);
+      this.ctx.translate(-mo.width / 2, -mo.height / 2);
     } else {
-      this.ctx.translate(mo.x, mo.y);
-      mo.draw(this.ctx); // Zeichne das Objekt
+      // 🔄 Normale Richtung
+      this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
+      this.ctx.rotate(rotation);
+      this.ctx.translate(-mo.width / 2, -mo.height / 2);
     }
 
-    mo.drawFrame(this.ctx); // Optional: Zeichne den Rand des Objekts
+    // Bild zeichnen
+    mo.draw(this.ctx);
+    mo.drawFrame(this.ctx); // optionaler Rahmen
 
     this.ctx.restore();
   }
+
 
   generateCoins() {
     const coins = [];

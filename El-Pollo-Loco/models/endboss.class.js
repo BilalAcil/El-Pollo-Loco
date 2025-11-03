@@ -79,6 +79,18 @@ class Endboss extends MovableObject {
       }
     }
   }
+
+  onDeath() {
+    if (this.world && !this.world.maracas) {
+      console.log("🎵 Maracas erscheinen gleich...");
+      setTimeout(() => {
+        this.world.maracas = new Maracas();
+        console.log("🪇 Maracas sind erschienen!");
+      }, 800);
+    }
+  }
+
+
   // Methode wird aufgerufen, wenn der Boss getroffen wird
   activate() {
     if (!this.isActivated && !this.isDead) {
