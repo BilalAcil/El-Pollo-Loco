@@ -2,8 +2,10 @@
 
 ## Eingang
 - [ ] Game over einfügen
+- [ ] Pause einfügen
 - [ ] Finish einfügen
-- [ ] Gamestart & co. einfügen
+- [ ] Endboss sprung optimieren
+- [ ] Letzte minute warnung einfügen
 
 ## Diese Woche
 - [ ] 
