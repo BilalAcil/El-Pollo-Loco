@@ -37,7 +37,6 @@ function startGameLogic() {
   });
 }
 
-
 /**
  * Stoppt das Spiel (z. B. bei Game Over)
  */
@@ -56,6 +55,17 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowDown') keyboard.DOWN = true;
   if (e.key === ' ') keyboard.SPACE = true;
   if (e.key === 'd' || e.key === 'D') keyboard.D = true;
+
+  // 🧩 NEU: Pause/Play mit Taste „P“
+  if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
+    if (!world) return;
+
+    if (world.isPaused) {
+      world.resumeGame();   // ▶️ fortsetzen
+    } else {
+      world.pauseGame();    // ⏸️ pausieren
+    }
+  }
 });
 
 window.addEventListener('keyup', (e) => {
