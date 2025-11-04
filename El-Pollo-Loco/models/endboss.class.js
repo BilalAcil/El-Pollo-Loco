@@ -8,7 +8,7 @@ class Endboss extends MovableObject {
   isDead = false; // isDead Eigenschaft
 
   // Bilder für normale Animation (Idle)
-  IMAGES_WALKING = [
+  IMAGES_IDLE = [
     'img/4_enemie_boss_chicken/6_idle/1_Chicken_Idle.png',
     'img/4_enemie_boss_chicken/6_idle/1_z_Chicken_Idle.png',
     'img/4_enemie_boss_chicken/6_idle/2_z_Chicken_Idle.png',
@@ -30,8 +30,8 @@ class Endboss extends MovableObject {
   ]
 
   constructor() {
-    super().loadImage(this.IMAGES_WALKING[0]);
-    this.loadImages(this.IMAGES_WALKING);
+    super().loadImage(this.IMAGES_IDLE[0]);
+    this.loadImages(this.IMAGES_IDLE); // Idle-Bilder laden
     this.loadImages(this.IMAGES_HURT); // Hurt-Bilder laden
     this.loadImages(this.IMAGES_DEAD); // Todes-Bilder laden
     this.x = 4500; // Initial x position
@@ -40,7 +40,9 @@ class Endboss extends MovableObject {
   }
 
   animate() {
-    setInterval(() => {
+    this.moveInterval = setInterval(() => {
+      if (this.isPaused) return;  // ⏸ Bewegung einfrieren
+
       if (this.isDead) {
         // Todes-Animation abspielen WÄHREND er fällt
         this.playAnimation(this.IMAGES_DEAD);
@@ -49,14 +51,16 @@ class Endboss extends MovableObject {
         this.playAnimation(this.IMAGES_HURT);
       } else {
         // Normale Idle-Animation
-        this.playAnimation(this.IMAGES_WALKING);
+        this.playAnimation(this.IMAGES_IDLE);
       }
     }, 400);
   }
 
   // ★★★ NEUE METHODE: Fallen starten wenn tot ★★★
   startFallingWhenDead() {
-    setInterval(() => {
+    this.moveInterval = setInterval(() => {
+      if (this.isPaused) return;  // ⏸ Bewegung einfrieren
+
       if (this.isDead) {
         // Langsam nach unten fallen lassen
         this.y += 3; // Je höher der Wert, desto schneller fällt er
@@ -123,4 +127,13 @@ class Endboss extends MovableObject {
       ctx.stroke();
     }
   }
+
+  pause() {
+    this.isPaused = true;
+  }
+
+  resume() {
+    this.isPaused = false;
+  }
+
 }

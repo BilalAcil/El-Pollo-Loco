@@ -96,13 +96,15 @@ class Character extends MovableObject {
     this.lastGlobalHit = 0;
     this.throwSound = new Audio('audio/throw-sound-1.mp3');
     this.throwSound.volume = 0.4; // etwas leiser
-    // this.idleImage = 'img/2_character_pepe/1_idle/idle/I-1.png';
     this.showIdle = false;
     this.lastMoveTime = Date.now();
     this.idleAnimationStarted = false;
     this.longIdleActive = false; // Neue Eigenschaft für Long Idle
     this.longIdleInterval = null; // Für die Long Idle Animation
   }
+
+  pauseStartTime = 0;  // Wann die Pause begonnen hat
+  totalPausedTime = 0; // Wie viel Zeit insgesamt pausiert war
 
 
   // Kollisionsbox Character
@@ -140,6 +142,7 @@ class Character extends MovableObject {
   animate() {
     // Bewegung und Kamera
     setInterval(() => {
+      if (this.isPaused) return;  // ⏸ Bewegung einfrieren
       if (this.atEndboss) {
         this.world.camera_x = -4100 + 100;
       } else {
@@ -158,8 +161,11 @@ class Character extends MovableObject {
           this.knockbackActive = false;
           this.speedX = 0;
         }
+
       }
 
+      // 🧩 Bewegung deaktivieren, wenn Welt pausiert ist
+      if (this.world.isPaused) return;
 
       // Bewegung
       if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
@@ -186,19 +192,19 @@ class Character extends MovableObject {
       // 👉 WURF-ANIMATION (Taste D)
       if (this.world.keyboard.D && this.animationFinished) {
         this.throwAnimation();
-        this.lastActionTime = Date.now(); // verhindert Idle-Reset während des Wurfs
-        this.lastMoveTime = Date.now(); // <--- doppelt sicher!
+        this.lastActionTime = Date.now();
+        this.lastMoveTime = Date.now();
       }
 
       // Endboss-Bereich aktivieren
       if (this.x >= 4100 && !this.atEndboss) {
         this.atEndboss = true;
 
-        // Endboss-Musik aktivieren
         if (this.world && this.world.countdown) {
           this.world.countdown.playEndBossMusic();
         }
       }
+
 
 
       // Zur Idle-Animation wechseln nach Inaktivität
@@ -214,12 +220,15 @@ class Character extends MovableObject {
     }, 1000 / 60);
 
 
+
     // Animation
     setInterval(() => {
+      if (this.isPaused) return;  // ⏸ Animation einfrieren
       // Wenn wir gerade werfen, soll die normale Animations-Logik nichts tun
       if (this.isThrowing) return;
 
-      const idleTime = Date.now() - this.lastMoveTime;
+      const idleTime = Date.now() - this.lastMoveTime - this.totalPausedTime;
+
 
       if (this.isDead()) {
         this.stopLongIdleAnimation();
@@ -249,6 +258,29 @@ class Character extends MovableObject {
     }, 50);
 
   }
+
+  // 🧩 Alles pausieren (Animation + Bewegung)
+  pause() {
+    if (this.isPaused) return;
+    this.isPaused = true;
+
+    // Merke dir, wann Pause begonnen hat
+    this.pauseStartTime = Date.now();
+  }
+
+
+  // 🧩 Alles fortsetzen
+  resume() {
+    if (!this.isPaused) return;
+    this.isPaused = false;
+
+    // Berechne, wie lange die Pause gedauert hat
+    const pausedDuration = Date.now() - this.pauseStartTime;
+
+    // Addiere sie zur totalen Pausenzeit
+    this.totalPausedTime += pausedDuration;
+  }
+
 
   handleJumpAnimation() {
     if (this.speedY > 0) {
@@ -386,6 +418,9 @@ class Character extends MovableObject {
   playDeathAnimation() {
     if (this.isDying) return; // Mehrfaches Starten verhindern
     this.isDying = true;
+    if (this.world) {
+      this.world.pauseAllMovements();
+    }
     this.animationFinished = false;
 
     // 🎵 Death sound

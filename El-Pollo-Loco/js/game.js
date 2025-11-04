@@ -24,7 +24,19 @@ function startGameLogic() {
   canvas = document.getElementById('canvas');
   world = new World(canvas, keyboard);
   console.log("🎮 Spiel gestartet!");
+
+  // 🖱️ Klick auf Canvas = Pause/Play Toggle
+  canvas.addEventListener("click", () => {
+    if (!world) return;
+
+    if (world.isPaused) {
+      world.resumeGame();   // ▶️ Spiel fortsetzen
+    } else {
+      world.pauseGame();    // ⏸️ Spiel pausieren
+    }
+  });
 }
+
 
 /**
  * Stoppt das Spiel (z. B. bei Game Over)

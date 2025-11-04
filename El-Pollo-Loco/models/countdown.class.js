@@ -1,6 +1,7 @@
 class Countdown extends DrawableObject {
   constructor() {
     super();
+    this.currentMusic = "normal"; // "normal" oder "endboss"
     this.imagePath = 'img/11_countdown/3208749.png';
     this.loadImage(this.imagePath);
 
@@ -53,16 +54,17 @@ class Countdown extends DrawableObject {
 
   // 🎧 Hintergrundmusik starten
   playBackgroundMusic() {
+    this.currentMusic = "normal";
+
     this.bgMusic1.currentTime = 0;
     this.bgMusic2.currentTime = 0;
-
-    // Schnellere Wiedergabe, falls du willst
     this.bgMusic1.playbackRate = 1.0;
     this.bgMusic2.playbackRate = 1.0;
 
     this.bgMusic1.play().catch(e => console.warn(e));
     this.bgMusic2.play().catch(e => console.warn(e));
   }
+
 
   // 🛑 Countdown & Musik stoppen
   stopCountdown() {
@@ -89,6 +91,8 @@ class Countdown extends DrawableObject {
 
   // 🔊 Wechselt zur Endboss-Musik
   playEndBossMusic() {
+    this.currentMusic = "endboss";
+
     // Normale Musik stoppen
     this.bgMusic1.pause();
     this.bgMusic2.pause();
@@ -101,11 +105,63 @@ class Countdown extends DrawableObject {
   }
 
 
+
   draw(ctx) {
     super.draw(ctx);
     ctx.font = "24px comic sans serif";
     ctx.fillStyle = "black";
     ctx.fillText(this.formatTime(), this.x + this.width - 320, this.y + 2);
   }
+
+  // 🛑 Musik pausieren (für Pause)
+  pauseAllMusic() {
+    this.bgMusic1.pause();
+    this.bgMusic2.pause();
+    this.endBossMusic.pause();
+  }
+
+  // ▶️ Musik fortsetzen (für Resume)
+  resumeAllMusic() {
+    // Prüfe, welche Musik zuletzt aktiv war
+    if (this.currentMusic === "endboss") {
+      this.endBossMusic.play().catch(e => console.warn(e));
+    } else {
+      this.bgMusic1.play().catch(e => console.warn(e));
+      this.bgMusic2.play().catch(e => console.warn(e));
+    }
+  }
+
+
+  // 🕓 Countdown einfrieren
+  pauseCountdown() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+    console.log("⏸️ Countdown pausiert");
+  }
+
+  // ▶️ Countdown fortsetzen
+  resumeCountdown() {
+    if (this.countdownInterval) return; // schon aktiv
+
+    this.countdownInterval = setInterval(() => {
+      this.countdownTime--;
+
+      if (this.countdownTime <= 0) {
+        this.stopCountdown(); // Countdown & Musik stoppen
+        if (this.world && this.world.character) {
+          this.world.character.energy = 0;
+          this.world.character.isDead = true;
+          this.world.character.playAnimation(this.world.character.IMAGES_DEAD);
+          this.world.statusBar.setPercentage(0);
+        }
+      }
+    }, 1000);
+
+    console.log("▶️ Countdown fortgesetzt");
+  }
+
+
 }
 

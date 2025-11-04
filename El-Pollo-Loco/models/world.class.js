@@ -62,7 +62,8 @@ class World {
 
 
   checkCollisions() {
-    setInterval(() => {
+    this.collisionInterval = setInterval(() => {
+      if (this.isPaused) return; // während Pause nichts prüfen
       const collidedEnemies = [];
       let characterHitEndbossFromAbove = false;
 
@@ -90,9 +91,9 @@ class World {
                 this.endbossBar.setPercentage(enemy.energy);
               }
 
-              // 🧩 NEU: Rückstoß nach links
+              // Rückstoß nach links
               this.character.speedY = 20;       // nach oben schleudern
-              this.character.speedX = -10;      // Stoß nach links
+              this.character.speedX = -15;      // Stoß nach links
               this.character.knockbackActive = true; // aktiviert Bewegung
 
 
@@ -426,6 +427,66 @@ class World {
     });
   }
 
+  /**
+ * Stoppt alle Bewegungen und Animationen in der Welt
+ * (z. B. wenn Pepe stirbt).
+ */
+  pauseAllMovements() {
+    console.log("⏸️ Welt wird eingefroren...");
+
+    // 🟦 Clouds
+    this.level.clouds.forEach(c => {
+      if (c.moveInterval) clearInterval(c.moveInterval);
+    });
+
+    // 🟥 Gegner (Chicken, ChickenSmall, Endboss)
+    this.level.enemies.forEach(e => {
+      if (e.moveInterval) clearInterval(e.moveInterval);
+      if (e.animationInterval) clearInterval(e.animationInterval);
+      if (e.fallInterval) clearInterval(e.fallInterval);
+    });
+
+    // 🟨 Kollisionsprüfungen
+    if (this.collisionInterval) {
+      clearInterval(this.collisionInterval);
+      this.collisionInterval = null;
+    }
+
+    // 🟩 Tasteneingaben deaktivieren (optional, verhindert Kamera-Bewegung)
+    this.keyboard.RIGHT = false;
+    this.keyboard.LEFT = false;
+    this.keyboard.UP = false;
+    this.keyboard.DOWN = false;
+    this.keyboard.SPACE = false;
+    this.keyboard.D = false;
+
+    // 🧊 Flag
+    this.isPaused = true;
+  }
+
+
+  /**
+   * Setzt die Bewegungen wieder fort (optional, für Restart).
+   */
+  resumeAllMovements() {
+    console.log("▶️ Welt läuft wieder...");
+    this.isPaused = false;
+
+    // Wolken, Gegner etc. starten ihre animate()-Methoden erneut
+    this.level.clouds.forEach(c => c.animate());
+    this.level.enemies.forEach(e => e.animate && e.animate());
+    this.checkCollisions(); // reaktiviert die Kollisionen
+  }
+
+  /**
+   * Stoppt das Spiel komplett (z. B. bei Game Over).
+   */
+  stop() {
+    this.pauseAllMovements();
+    console.log("🛑 Spiel gestoppt.");
+  }
+
+
   addObjectsToMap(objects) {
     objects.forEach(o => {
       this.addToMap(o);
@@ -505,4 +566,114 @@ class World {
       enemy instanceof Endboss) &&
       !(enemy instanceof EndBossStatusBar);
   }
+
+  // 🧩 SPIEL PAUSIEREN
+  pauseGame() {
+    if (this.isPaused) return;
+    this.isPaused = true;
+
+    // Bewegungen & Animationen anhalten
+    this.pauseAllMovements();
+
+    // Pepe & Endboss pausieren
+    if (this.character) this.character.pause();
+    if (this.endboss) this.endboss.pause();
+
+    // ⏸ Musik und Countdown
+    if (this.countdown) {
+      this.countdown.pauseAllMusic();
+      this.countdown.pauseCountdown();   // ⏸ Countdown anhalten
+    }
+
+    // Pause-Symbol + Play-Symbol
+    this.showPauseThenPlaySymbol();
+    console.log("⏸️ Spiel pausiert");
+  }
+
+  // 🧩 SPIEL FORTSETZEN
+  resumeGame() {
+    if (!this.isPaused) return;
+    this.isPaused = false;
+
+    // Bewegungen wieder starten
+    this.resumeAllMovements();
+
+    // Pepe & Endboss fortsetzen
+    if (this.character) this.character.resume();
+    if (this.endboss) this.endboss.resume();
+
+    // ▶️ Musik und Countdown fortsetzen
+    if (this.countdown) {
+      this.countdown.resumeAllMusic();
+      this.countdown.resumeCountdown();  // ▶️ Countdown weitermachen
+    }
+
+    // Play-Symbol ausblenden
+    this.hidePlaySymbol();
+    console.log("▶️ Spiel fortgesetzt");
+  }
+
+  // 🧩 ZEIGE PAUSE, DANN PLAY SYMBOL
+  showPauseThenPlaySymbol() {
+    // Erst Pause-Symbol kurz anzeigen
+    const pauseOverlay = document.createElement("div");
+    pauseOverlay.innerHTML = "⏸️";
+    pauseOverlay.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    color: white;
+    text-shadow: 0 0 10px black;
+    pointer-events: none;
+    user-select: none;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    z-index: 9999;
+  `;
+    document.body.appendChild(pauseOverlay);
+
+    // Nach 1 Sekunde Pause-Symbol ausblenden → Play-Symbol anzeigen
+    setTimeout(() => {
+      pauseOverlay.style.opacity = "0";
+      setTimeout(() => {
+        pauseOverlay.remove();
+        this.showPlaySymbol(); // dauerhaftes ▶️
+      }, 500);
+    }, 200);
+  }
+
+  // 🧩 DAUERHAFTES PLAY-SYMBOL ZEIGEN
+  showPlaySymbol() {
+    // Wenn schon vorhanden → nicht doppelt anzeigen
+    if (document.getElementById("play-overlay")) return;
+
+    const playOverlay = document.createElement("div");
+    playOverlay.id = "play-overlay";
+    playOverlay.innerHTML = "▶️";
+    playOverlay.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    color: white;
+    text-shadow: 0 0 10px black;
+    user-select: none;
+    pointer-events: none;
+    opacity: 1;
+    z-index: 9999;
+  `;
+    document.body.appendChild(playOverlay);
+  }
+
+  // 🧩 PLAY-SYMBOL ENTFERNEN
+  hidePlaySymbol() {
+    const overlay = document.getElementById("play-overlay");
+    if (overlay) overlay.remove();
+  }
+
+
+
 }
