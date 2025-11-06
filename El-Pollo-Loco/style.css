@@ -102,12 +102,6 @@ button:hover {
 
 /* Dialog */
 .dialog {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 720px;
-  height: 480px;
-  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,12 +109,57 @@ button:hover {
 }
 
 .dialog-content {
-  background: white;
-  color: black;
+  background: black;
   border-radius: 10px;
   padding: 20px 30px;
   text-align: center;
-  width: 70%;
+  width: 510px;
+  height: 350px;
+  overflow-y: auto;
+  /* ← vertikales Scrollen aktivieren */
+  overflow-x: hidden;
+  /* ← horizontales Scrollen verhindern */
+}
+
+/* Scrollbalken zuerst unsichtbar */
+.dialog-content::-webkit-scrollbar {
+  width: 8px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Wenn aktiv (scrolling), sichtbar */
+.dialog-content.show-scroll::-webkit-scrollbar {
+  opacity: 1;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #ffcc00;
+  border-radius: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #ffd633;
+}
+
+.yellow {
+  color: #ffcc00;
+  letter-spacing: 2px;
+}
+
+p {
+  margin: 0;
+  color: wheat;
+}
+
+
+h3 {
+  margin: 5px 0 0 0;
 }
 
 .hidden {
@@ -131,6 +170,19 @@ button:hover {
   height: 100px;
   display: flex;
   justify-content: space-evenly;
+}
+
+.boss {
+  height: 80px;
+}
+
+.marakas {
+  height: 25px;
+  transform: rotate(-30deg);
+}
+
+.marakas-div {
+  align-items: flex-end;
 }
 
 /* --- Button blinkt während Ladezeit --- */

@@ -22,7 +22,10 @@
       <div class="menu-img">
         <img src="img/13_menu-img/pepe-menu.png"></img>
         <img src="img/13_menu-img/vs.png">
-        <img src="img/13_menu-img/boss-menu.png"></img>
+        <div class="menu-img marakas-div">
+          <img class="boss" src="img/13_menu-img/boss-menu.png"></img>
+          <img class="marakas" src="img/14_maracas/maracas.png">
+        </div>
       </div>
       <button id="start-btn" class="loading" disabled>Bitte warten...</button>
       <button onclick="openInstructions()">ℹ️ Anleitung</button>
@@ -33,18 +36,24 @@
   <!-- ANLEITUNG -->
   <div id="instructions" class="dialog hidden">
     <div class="dialog-content">
-      <h3>Spielerklärung & Tastenbelegung</h3>
+      <h3 class="yellow">Spielerklärung</h3>
       <p>
-        Ziel: Sammle alle Münzen, besiege Gegner und überlebe!<br><br>
-        <b>Tasten:</b><br>
+        Das Boss-Huhn hat seine Maracas klauen lassen und will, dass Pepe die Stadt verlässt!<br><br>
+        <b class="yellow">Ziel:</b><br>
+        Hilf Pepe, seine Maracas zurückzuholen. Sammle alle Münzen, besiege das Boss-Huhn und zeig ihm, wer hier
+        tanzt!<br><br>
+
+        <b class="yellow">Tastenbelegung</b><br>
         ⬅️ / ➡️ Bewegung<br>
         🦶 Leertaste – Springen<br>
         🍅 D – Salsa werfen<br>
-        ⏸️ M – Ton an/aus
+        🔈 M – Ton an/aus<br>
+        ⏸️ P – Pause / Fortsetzen
       </p>
       <button onclick="closeInstructions()">❌ Schließen</button>
     </div>
   </div>
+
 
   <!-- ENDSCREEN -->
   <div id="end-screen" class="overlay hidden">
