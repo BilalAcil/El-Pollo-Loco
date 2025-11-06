@@ -40,37 +40,28 @@ class Endboss extends MovableObject {
   }
 
   animate() {
-    this.moveInterval = setInterval(() => {
-      if (this.isPaused) return;  // ⏸ Bewegung einfrieren
+    this.animationInterval = setInterval(() => {
+      if (this.isPaused || (this.world && this.world.isPaused)) return;
 
       if (this.isDead) {
-        // Todes-Animation abspielen WÄHREND er fällt
         this.playAnimation(this.IMAGES_DEAD);
       } else if (this.isActivated) {
-        // Hurt-Animation
         this.playAnimation(this.IMAGES_HURT);
       } else {
-        // Normale Idle-Animation
         this.playAnimation(this.IMAGES_IDLE);
       }
     }, 400);
   }
 
-  // ★★★ NEUE METHODE: Fallen starten wenn tot ★★★
   startFallingWhenDead() {
-    this.moveInterval = setInterval(() => {
-      if (this.isPaused) return;  // ⏸ Bewegung einfrieren
+    this.fallInterval = setInterval(() => {
+      if (this.isPaused || (this.world && this.world.isPaused)) return;
 
       if (this.isDead) {
-        // Langsam nach unten fallen lassen
-        this.y += 3; // Je höher der Wert, desto schneller fällt er
-
-        // Wenn er weit genug gefallen ist (unterhalb des Bildschirms), entfernen
-        if (this.y > 600) {
-          this.removeFromWorld();
-        }
+        this.y += 3;
+        if (this.y > 600) this.removeFromWorld();
       }
-    }, 1000 / 30); // 30 FPS für sanften Fall
+    }, 1000 / 30);
   }
 
   // ★★★ NEUE METHODE: Aus der Welt entfernen ★★★

@@ -131,7 +131,7 @@ class Character extends MovableObject {
       const box = this.collisionBox;
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.stokeStyle = "blue"; // Andere Farbe für Character
+      ctx.strokeStyle = "blue"; // Andere Farbe für Character
       // Relative Position zur Hitbox zeichnen
       ctx.rect(box.x - this.x, box.y - this.y, box.width, box.height);
       ctx.stroke();

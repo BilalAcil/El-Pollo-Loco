@@ -446,6 +446,12 @@ class World {
       if (e.fallInterval) clearInterval(e.fallInterval);
     });
 
+    if (this.countdown && this.countdown.endBossMusic) {
+      this.countdown.endBossMusic.pause();
+      this.countdown.endBossMusic.currentTime = 0;
+    }
+
+
     // 🟨 Kollisionsprüfungen
     if (this.collisionInterval) {
       clearInterval(this.collisionInterval);
