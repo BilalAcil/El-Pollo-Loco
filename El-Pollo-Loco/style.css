@@ -82,7 +82,19 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
+  line-height: 1;
+  /* verhindert Text-Verschiebung */
+  height: 48px;
+  /* feste Höhe – gleiche Größe bei allen Texten */
+  display: inline-flex;
+  /* Text perfekt zentrieren */
+  align-items: center;
+  /* vertikal mittig */
+  justify-content: center;
+  /* horizontal mittig */
+  text-align: center;
 }
+
 
 button:hover {
   background: #ffd633;
@@ -119,4 +131,42 @@ button:hover {
   height: 100px;
   display: flex;
   justify-content: space-evenly;
+}
+
+/* --- Button blinkt während Ladezeit --- */
+#start-btn.loading {
+  animation: blink 1.2s infinite;
+  opacity: 0.6;
+  background: #888;
+  cursor: not-allowed;
+  border: none;
+}
+
+/* Wenn Spiel geladen ist */
+#start-btn:not(.loading) {
+  animation: none;
+  opacity: 1;
+  background: #ffcc00;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Hovereffekt – exakt wie die anderen Buttons */
+#start-btn:not(.loading):hover {
+  background: #ffd633;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

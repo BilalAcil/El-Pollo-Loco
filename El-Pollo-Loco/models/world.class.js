@@ -673,7 +673,4 @@ class World {
     const overlay = document.getElementById("play-overlay");
     if (overlay) overlay.remove();
   }
-
-
-
 }

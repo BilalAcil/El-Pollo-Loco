@@ -71,3 +71,45 @@ function returnToHome() {
   document.getElementById('canvas').style.display = 'none';
   document.getElementById('start-screen').classList.remove('hidden');
 }
+
+
+/**
+ * Warten, bis Browser + Spiel intern vollständig geladen sind
+ */
+window.addEventListener('load', async () => {
+  console.log("🌐 Browser vollständig geladen – warte auf interne Spielressourcen...");
+
+  // interne Ressourcen prüfen
+  await waitForGameAssets();
+
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) {
+    startBtn.classList.remove('loading');
+    startBtn.removeAttribute('disabled');
+    startBtn.textContent = '🎮 Spiel starten';
+    startBtn.onclick = startGame;
+    console.log("✅ Alles geladen – Spielstart möglich!");
+  }
+});
+
+/**
+ * Prüft in Intervallen, ob Spielressourcen geladen sind
+ */
+async function waitForGameAssets() {
+  const startTime = Date.now();
+  const timeout = 20000; // maximal 20 Sekunden warten
+
+  return new Promise(resolve => {
+    const check = setInterval(() => {
+      const assetsReady =
+        typeof World !== 'undefined' &&
+        typeof level1 !== 'undefined' &&
+        document.querySelectorAll('img').length > 0;
+
+      if (assetsReady || Date.now() - startTime > timeout) {
+        clearInterval(check);
+        resolve();
+      }
+    }, 300);
+  });
+}
