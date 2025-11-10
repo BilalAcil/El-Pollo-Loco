@@ -20,7 +20,15 @@ function startGame() {
   document.getElementById('end-screen').classList.add('hidden');
 
   startGameLogic();
+
+  // 🟢 Nach 200ms Spiel fortsetzen (alles starten)
+  setTimeout(() => {
+    if (world && world.isPaused) {
+      world.resumeGame();
+    }
+  }, 200);
 }
+
 
 /**
  * Anleitung öffnen/schließen

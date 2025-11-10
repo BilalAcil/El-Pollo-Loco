@@ -21,26 +21,42 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
     this.keyboard = keyboard;
+
+    // Welt zeichnen und initialisieren
     this.draw();
     this.setWorld();
-    this.countdown.world = this; // Welt-Referenz setzen, damit Countdown Charakter beeinflussen kann
+    this.countdown.world = this; // Countdown kennt jetzt die Welt
     this.checkCollisions();
-    this.lastEnemyHit = 0;    // Zeitpunkt des letzten Gegner-Treffers
-    this.lastEndbossHit = 0;  // Zeitpunkt des letzten Endboss-Treffers
+    this.lastEnemyHit = 0;
+    this.lastEndbossHit = 0;
 
-
-    // Vorladen des Heilungssounds
+    // 🔊 Sounds vorbereiten
     this.healSound = new Audio('audio/heart-1.mp3');
     this.healSound.volume = 0.5;
-    this.healSound.load(); // sorgt dafür, dass die Datei vorgeladen wird
+    this.healSound.load();
 
-    // Sound für Endboss-Schaden
-    this.endbossHurtSound = new Audio('audio/endboss-hurt.mp3'); // oder 'audio/endboss-hurt.mp3'
+    this.endbossHurtSound = new Audio('audio/endboss-hurt.mp3');
     this.endbossHurtSound.volume = 0.6;
     this.endbossHurtSound.load();
 
+    // 🧊 Spiel startet PAUSIERT
+    this.isPaused = true;
+    this.pauseAllMovements();
 
+    // Charakter, Endboss und Countdown pausieren
+    if (this.character) this.character.pause?.();
+    if (this.endboss) this.endboss.pause?.();
+    if (this.countdown) {
+      this.countdown.pauseAllMusic();
+      this.countdown.pauseCountdown();
+    }
+
+    // ▶️ Play-Symbol zeigen (damit sichtbar ist, dass man starten kann)
+    this.showPlaySymbol();
+
+    console.log("🧊 Welt erstellt – startet pausiert.");
   }
+
 
   setWorld() {
     this.character.world = this;
@@ -610,9 +626,11 @@ class World {
 
     // ▶️ Musik und Countdown fortsetzen
     if (this.countdown) {
+      if (!this.countdown.isStarted) this.countdown.startCountdown(); // 🟢 Countdown erst beim Start beginnen
       this.countdown.resumeAllMusic();
-      this.countdown.resumeCountdown();  // ▶️ Countdown weitermachen
+      this.countdown.resumeCountdown();
     }
+
 
     // Play-Symbol ausblenden
     this.hidePlaySymbol();
