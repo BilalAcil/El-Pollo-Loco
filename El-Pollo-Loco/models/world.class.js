@@ -623,7 +623,7 @@ class World {
   showPauseThenPlaySymbol() {
     // Erst Pause-Symbol kurz anzeigen
     const pauseOverlay = document.createElement("div");
-    pauseOverlay.innerHTML = "⏸️";
+    pauseOverlay.innerHTML = "⏸";
     pauseOverlay.style.cssText = `
     position: absolute;
     top: 50%;
@@ -634,7 +634,7 @@ class World {
     text-shadow: 0 0 10px black;
     pointer-events: none;
     user-select: none;
-    opacity: 1;
+    opacity: 0.4;
     transition: opacity 0.5s ease;
     z-index: 9999;
   `;
@@ -657,7 +657,7 @@ class World {
 
     const playOverlay = document.createElement("div");
     playOverlay.id = "play-overlay";
-    playOverlay.innerHTML = "▶️";
+    playOverlay.innerHTML = "▶";
     playOverlay.style.cssText = `
     position: absolute;
     top: 50%;
@@ -668,7 +668,7 @@ class World {
     text-shadow: 0 0 10px black;
     user-select: none;
     pointer-events: none;
-    opacity: 1;
+    opacity: 0.4;
     z-index: 9999;
   `;
     document.body.appendChild(playOverlay);
