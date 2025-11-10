@@ -265,23 +265,20 @@ class Character extends MovableObject {
   pause() {
     if (this.isPaused) return;
     this.isPaused = true;
-
-    // Merke dir, wann Pause begonnen hat
     this.pauseStartTime = Date.now();
   }
 
-
-  // 🧩 Alles fortsetzen
   resume() {
     if (!this.isPaused) return;
     this.isPaused = false;
 
-    // Nach Pause: nur letzte Move-Zeit neu justieren
+    // Zeitausgleich, damit Idle-Timer korrekt bleibt
     if (this.pauseStartTime) {
       const pausedDuration = Date.now() - this.pauseStartTime;
       this.lastMoveTime += pausedDuration;
     }
   }
+
 
 
 
@@ -373,6 +370,9 @@ class Character extends MovableObject {
     let currentImageIndex = 0;
 
     this.longIdleInterval = setInterval(() => {
+      // ➡️ Wenn das Spiel oder der Charakter pausiert ist, einfach warten
+      if (this.isPaused || (this.world && this.world.isPaused)) return;
+
       // Prüfen ob Bewegung stattfindet
       if (Date.now() - this.lastMoveTime < 12000) {
         this.stopLongIdleAnimation();
@@ -382,7 +382,8 @@ class Character extends MovableObject {
       // Long Idle Animation in Schleife abspielen
       this.loadImage(this.IMAGES_LONG_IDLE[currentImageIndex]);
       currentImageIndex = (currentImageIndex + 1) % this.IMAGES_LONG_IDLE.length;
-    }, 200); // Geschwindigkeit der Long Idle Animation
+    }, 200);
+
   }
 
   stopLongIdleAnimation() {

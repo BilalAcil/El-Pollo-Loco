@@ -603,7 +603,8 @@ class World {
 
   // 🧩 SPIEL PAUSIEREN
   pauseGame() {
-    if (this.isPaused) return;
+    if (this.isPaused || (this.world && this.world.isPaused)) return;
+
     this.isPaused = true;
 
     // Bewegungen & Animationen anhalten
