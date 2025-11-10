@@ -617,6 +617,35 @@ class World {
     if (!this.isPaused) return;
     this.isPaused = false;
 
+    // ⚡ NEU: Startfall-Animation – nur beim allerersten Start
+    if (!this.hasStartedOnce) {
+      this.hasStartedOnce = true;
+
+      if (this.character) {
+        // 🪂 Pepe zeigt "Fall-Bild" beim Start
+        this.character.loadImage('img/2_character_pepe/3_jump/J-37.png');
+
+        // 👇 Überwache, wann er den Boden erreicht
+        const landingCheck = setInterval(() => {
+          if (!this.character.isAboveGround()) { // = auf Boden gelandet (y >= 150)
+            clearInterval(landingCheck);
+
+            // 💥 Kurz Landebild zeigen
+            this.character.loadImage('img/2_character_pepe/3_jump/J-38.png');
+
+            // ⏳ Nach 300ms Idle-Animation starten
+            setTimeout(() => {
+              if (this.character.playIdleAnimation) {
+                this.character.playIdleAnimation();
+              } else {
+                this.character.loadImage(this.character.IMAGES_STANDING[0]);
+              }
+            }, 300);
+          }
+        }, 50);
+      }
+    }
+
     // Bewegungen wieder starten
     this.resumeAllMovements();
 
@@ -626,16 +655,17 @@ class World {
 
     // ▶️ Musik und Countdown fortsetzen
     if (this.countdown) {
-      if (!this.countdown.isStarted) this.countdown.startCountdown(); // 🟢 Countdown erst beim Start beginnen
+      if (!this.countdown.isStarted) this.countdown.startCountdown(); // Countdown erst beim Start beginnen
       this.countdown.resumeAllMusic();
       this.countdown.resumeCountdown();
     }
-
 
     // Play-Symbol ausblenden
     this.hidePlaySymbol();
     console.log("▶️ Spiel fortgesetzt");
   }
+
+
 
   // 🧩 ZEIGE PAUSE, DANN PLAY SYMBOL
   showPauseThenPlaySymbol() {
