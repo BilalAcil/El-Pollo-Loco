@@ -98,39 +98,47 @@ class Countdown extends DrawableObject {
    * 🔊 Wechselt zur Endboss-Musik
    */
   playEndBossMusic() {
-    this.currentMusic = "endboss";
+    if (this.currentMusic !== "endboss") {
+      this.currentMusic = "endboss";
 
-    // Normale Musik stoppen
-    this.bgMusic1.pause();
-    this.bgMusic2.pause();
-    this.bgMusic1.currentTime = 0;
-    this.bgMusic2.currentTime = 0;
+      // Normale Musik stoppen
+      this.bgMusic1.pause();
+      this.bgMusic2.pause();
 
-    // Endboss-Musik starten
-    this.endBossMusic.currentTime = 0;
-    this.endBossMusic.play().catch(e => console.warn(e));
+      // Endboss-Musik starten (ohne Reset!)
+      this.endBossMusic.play().catch(e => console.warn(e));
+    }
   }
+
 
   /**
    * ⏸ Musik pausieren
    */
   pauseAllMusic() {
-    this.bgMusic1.pause();
-    this.bgMusic2.pause();
-    this.endBossMusic.pause();
-  }
-
-  /**
-   * ▶️ Musik fortsetzen
-   */
-  resumeAllMusic() {
-    if (this.currentMusic === "endboss") {
-      this.endBossMusic.play().catch(e => console.warn(e));
-    } else {
-      this.bgMusic1.play().catch(e => console.warn(e));
-      this.bgMusic2.play().catch(e => console.warn(e));
+    try {
+      if (this.bgMusic1 && !this.bgMusic1.paused) this.bgMusic1.pause();
+      if (this.bgMusic2 && !this.bgMusic2.paused) this.bgMusic2.pause();
+      if (this.endBossMusic && !this.endBossMusic.paused) this.endBossMusic.pause();
+      console.log("🎵 Alle Musik pausiert (Position beibehalten).");
+    } catch (e) {
+      console.warn("Fehler beim Pausieren der Musik:", e);
     }
   }
+
+  resumeAllMusic() {
+    try {
+      if (this.currentMusic === "endboss") {
+        this.endBossMusic.play().catch(e => console.warn("Endboss-Musik Resume-Fehler:", e));
+      } else {
+        this.bgMusic1.play().catch(e => console.warn("bgMusic1 Resume-Fehler:", e));
+        this.bgMusic2.play().catch(e => console.warn("bgMusic2 Resume-Fehler:", e));
+      }
+      console.log("🎵 Musik fortgesetzt.");
+    } catch (e) {
+      console.warn("Fehler beim Fortsetzen der Musik:", e);
+    }
+  }
+
 
   /**
    * 🕓 Countdown einfrieren
