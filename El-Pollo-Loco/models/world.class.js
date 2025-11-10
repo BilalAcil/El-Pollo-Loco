@@ -116,10 +116,15 @@ class World {
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
                 console.log("💀 Endboss besiegt – startet Todesanimation");
+
                 if (enemy.onDeath) {
                   enemy.onDeath();
                 }
+
+                // 💥 Todesfall startet langsames Fallen
+                enemy.startFallingWhenDead();
               }
+
             }
 
           }
@@ -267,9 +272,16 @@ class World {
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
-                console.log("💀 Endboss wurde durch Salsa besiegt!");
-                if (enemy.onDeath) enemy.onDeath();
+                console.log("💀 Endboss besiegt – startet Todesanimation");
+
+                if (enemy.onDeath) {
+                  enemy.onDeath();
+                }
+
+                // 💥 Todesfall startet langsames Fallen
+                enemy.startFallingWhenDead();
               }
+
 
             } else if (enemy instanceof Chicken || enemy instanceof ChickenSmall) {
               // 🐔 Salsa-Todesanimation mit weichem Blinken

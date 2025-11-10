@@ -36,7 +36,6 @@ class Endboss extends MovableObject {
     this.loadImages(this.IMAGES_DEAD); // Todes-Bilder laden
     this.x = 4500; // Initial x position
     this.animate();
-    this.startFallingWhenDead(); // ← Fall-Animation starten
   }
 
   animate() {
@@ -54,15 +53,24 @@ class Endboss extends MovableObject {
   }
 
   startFallingWhenDead() {
+    if (this.fallInterval) return; // verhindert Doppelstart
+
+    let fallSpeed = 0;
     this.fallInterval = setInterval(() => {
       if (this.isPaused || (this.world && this.world.isPaused)) return;
 
       if (this.isDead) {
-        this.y += 3;
-        if (this.y > 600) this.removeFromWorld();
+        fallSpeed += 0.5; // sanfte Beschleunigung
+        this.y += fallSpeed;
+
+        if (this.y > 600) {
+          clearInterval(this.fallInterval);
+          this.removeFromWorld();
+        }
       }
     }, 1000 / 30);
   }
+
 
   // ★★★ NEUE METHODE: Aus der Welt entfernen ★★★
   removeFromWorld() {
