@@ -227,9 +227,15 @@ class Character extends MovableObject {
       // Wenn wir gerade werfen, soll die normale Animations-Logik nichts tun
       if (this.isThrowing) return;
 
-      const idleTime = Date.now() - this.lastMoveTime - this.totalPausedTime;
+      // 👉 Neue, stabile Berechnung der Inaktivität
+      let effectiveIdleTime = Date.now() - this.lastMoveTime;
 
+      // Wenn gerade pausiert war, ziehe nur die Zeit der letzten Pause ab
+      if (this.isPaused && this.pauseStartTime) {
+        effectiveIdleTime -= (Date.now() - this.pauseStartTime);
+      }
 
+      // 💤 Idle- oder Long-Idle-Logik
       if (this.isDead()) {
         this.stopLongIdleAnimation();
         this.playDeathAnimation();
@@ -238,23 +244,19 @@ class Character extends MovableObject {
         this.playAnimation(this.IMAGES_HURT);
       } else if (this.isAboveGround()) {
         this.stopLongIdleAnimation();
-        // HIER DIE ÄNDERUNG: handleJumpAnimation() statt playAnimation()
-        this.handleJumpAnimation(); // ← GEÄNDERT
+        this.handleJumpAnimation();
       } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_WALKING);
-      } else if (idleTime > 12000) {
-        if (!this.longIdleActive) {
-          this.startLongIdleAnimation();
-        }
-      } else if (idleTime > 10000) {
-        if (!this.idleAnimationStarted) {
-          this.playIdleAnimation();
-        }
+      } else if (effectiveIdleTime > 12000) {
+        if (!this.longIdleActive) this.startLongIdleAnimation();
+      } else if (effectiveIdleTime > 10000) {
+        if (!this.idleAnimationStarted) this.playIdleAnimation();
       } else {
         this.stopLongIdleAnimation();
         this.loadImage(this.IMAGES_IDLE[0]);
       }
+
     }, 50);
 
   }
@@ -274,12 +276,13 @@ class Character extends MovableObject {
     if (!this.isPaused) return;
     this.isPaused = false;
 
-    // Berechne, wie lange die Pause gedauert hat
-    const pausedDuration = Date.now() - this.pauseStartTime;
-
-    // Addiere sie zur totalen Pausenzeit
-    this.totalPausedTime += pausedDuration;
+    // Nach Pause: nur letzte Move-Zeit neu justieren
+    if (this.pauseStartTime) {
+      const pausedDuration = Date.now() - this.pauseStartTime;
+      this.lastMoveTime += pausedDuration;
+    }
   }
+
 
 
   handleJumpAnimation() {
