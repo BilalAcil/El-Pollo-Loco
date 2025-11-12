@@ -374,17 +374,21 @@ class World {
         // Maracas verschwindet
         this.maracas = null;
 
+        // Alles anhalten (Countdown, Musik, Bewegungen)
+        if (this.countdown) this.countdown.stopCountdown();  // ⏹ Countdown & Musik stoppen
+        this.pauseAllMovements();                             // ❄️ Welt einfrieren
+
         // Sound abspielen
         const maracasSound = new Audio('audio/maracas.mp3');
         maracasSound.volume = 0.6;
         maracasSound.playbackRate = 1.0;
         maracasSound.play().catch(e => console.warn('Maracas sound error:', e));
 
-        // Optional: hier kannst du ein Power-up, Punkte oder Animation einbauen
+        // 🎬 Sieg-Screen nach kurzer Verzögerung anzeigen
+        setTimeout(() => {
+          this.endGame(true);
+        }, 2500);
       }
-
-
-
     }, 50);
   }
 
