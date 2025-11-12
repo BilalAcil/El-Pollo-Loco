@@ -576,8 +576,8 @@ class World {
     const salsas = [];
 
     for (let i = 0; i < 5; i++) {
-      let salsaX = 500 + Math.random() * 4000; // zufällige Position im Level
-      let salsaY = 380 + Math.random() * 30;   // leicht variierende Höhe
+      let salsaX = 500 + Math.random() * 3500; // zufällige Position im Level
+      let salsaY = 370 + Math.random() * 20;   // leicht variierende Höhe
       salsas.push(new Salsa(salsaX, salsaY));
     }
 
