@@ -194,6 +194,9 @@ class World {
                 // 👉 Todesanimation + Fallen starten
                 this.character.playDeathAnimation();
                 this.character.startFallingWhenDead();
+
+                // 👉 Endscreen anzeigen nach Tod
+                this.endGame(false);
               }
             }
           }
@@ -230,6 +233,9 @@ class World {
                 // 👉 Death animation + falling start
                 this.character.playDeathAnimation();
                 this.character.startFallingWhenDead();
+
+                // 👉 Endscreen anzeigen nach Tod
+                this.endGame(false);
               }
 
             }
@@ -671,6 +677,17 @@ class World {
     // Play-Symbol ausblenden
     this.hidePlaySymbol();
     console.log("▶️ Spiel fortgesetzt");
+  }
+
+
+  endGame(win = false) {
+    // 🛑 Alles einfrieren
+    this.pauseAllMovements();
+
+    // ⏱️ Nach kurzer Verzögerung Endscreen zeigen
+    setTimeout(() => {
+      showEndScreen(win); // false = verloren, true = gewonnen
+    }, 3000);
   }
 
 

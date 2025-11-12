@@ -222,3 +222,34 @@ h3 {
     opacity: 1;
   }
 }
+
+/* ========================= */
+/* 🏁 ENDSCREEN ANPASSUNGEN  */
+/* ========================= */
+#end-screen {
+  background: rgba(0, 0, 0, 0.85);
+  /* etwas dunkler als Startscreen */
+  color: #ffcc00;
+  z-index: 20;
+  /* über allem anderen */
+  text-align: center;
+}
+
+#end-screen h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+#end-screen button {
+  background: #ffcc00;
+  color: black;
+  font-weight: bold;
+  width: 180px;
+  margin: 10px;
+  transition: 0.2s;
+}
+
+#end-screen button:hover {
+  background: #ffd633;
+  transform: scale(1.05);
+}

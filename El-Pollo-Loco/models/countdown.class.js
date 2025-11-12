@@ -10,7 +10,7 @@ class Countdown extends DrawableObject {
     this.x = 320;
     this.y = 22;
 
-    this.countdownTime = 120; // Sekunden
+    this.countdownTime = 61; // Sekunden
     this.countdownInterval = null;
     this.isStarted = false;
     this.isPaused = false;
@@ -69,11 +69,15 @@ class Countdown extends DrawableObject {
           this.world.statusBar.setPercentage(0);
           pepe.isDead = true;
 
-          // ❗ Keine Pause hier – einfach dieselbe Sequenz wie beim Endboss
           pepe.playDeathAnimation();
           pepe.startFallingWhenDead();
+
+          // 👉 Einheitlicher Game-Over-Call
+          this.world.endGame(false);
         }
       }
+
+
     }, 1000);
   }
 

@@ -57,11 +57,18 @@ function toggleMute() {
  * Zeigt den Endscreen an (wird vom Spiel aufgerufen)
  */
 function showEndScreen(win) {
-  stopGame(); // beendet den Loop
+  stopGame(); // beendet den Loop (falls vorhanden)
   const message = win ? '🎉 Du hast gewonnen!' : '💀 Du hast verloren!';
   document.getElementById('end-message').textContent = message;
+
+  // Canvas und Titel ausblenden
+  document.getElementById('canvas').style.display = 'none';
+  document.getElementById('game-name').style.display = 'none';
+
+  // Endscreen einblenden
   document.getElementById('end-screen').classList.remove('hidden');
 }
+
 
 /**
  * Spiel neu starten
