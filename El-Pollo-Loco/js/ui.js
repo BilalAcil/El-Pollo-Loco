@@ -55,19 +55,44 @@ function toggleMute() {
 
 /**
  * Zeigt den Endscreen an (wird vom Spiel aufgerufen)
+ * @param {boolean} win - true = gewonnen, false = verloren
  */
 function showEndScreen(win) {
-  stopGame(); // beendet den Loop (falls vorhanden)
-  const message = win ? '🎉 Du hast gewonnen!' : '💀 Du hast verloren!';
-  document.getElementById('end-message').textContent = message;
+  stopGame(); // beendet den Loop, falls vorhanden
 
-  // Canvas und Titel ausblenden
+  const endScreen = document.getElementById('end-screen');
+  const messageEl = document.getElementById('end-message');
+  const buttonContainer = endScreen.querySelector('.menu-box');
+
+  // Canvas & UI ausblenden
   document.getElementById('canvas').style.display = 'none';
   document.getElementById('game-name').style.display = 'none';
 
+  // 🎉 Sieg-Fall
+  if (win) {
+    messageEl.textContent = '🎸 Du hast die Maracas zurückgeholt!';
+
+    // Buttons neu setzen
+    buttonContainer.innerHTML = `
+      <h2 id="end-message">🎸 Du hast die Maracas zurückgeholt!</h2>
+      <button onclick="nextLevel()">🎸 Gitarre holen</button>
+      <button onclick="returnToHome()">🏠 Zurück zum Start</button>
+    `;
+  }
+  // 💀 Verlust-Fall
+  else {
+    messageEl.textContent = '💀 Du hast verloren!';
+    buttonContainer.innerHTML = `
+      <h2 id="end-message">💀 Du hast verloren!</h2>
+      <button onclick="restartGame()">🔁 Nochmal spielen</button>
+      <button onclick="returnToHome()">🏠 Zurück zum Start</button>
+    `;
+  }
+
   // Endscreen einblenden
-  document.getElementById('end-screen').classList.remove('hidden');
+  endScreen.classList.remove('hidden');
 }
+
 
 
 /**
@@ -78,14 +103,39 @@ function restartGame() {
   startGame();
 }
 
+function nextLevel() {
+  // document.getElementById('end-screen').classList.add('hidden');
+  console.log("🎸 Nächster Level wird geladen...");
+
+  // Hier könntest du dein Level-2-Setup starten:
+  // z.B. loadLevel2();
+  // oder einfach ein Platzhalter:
+  alert("Level 2: Hol dir die Gitarre! (noch in Arbeit 😎)");
+
+}
+
+
 /**
  * Zurück zum Startscreen
  */
 function returnToHome() {
   stopGame();
+
+  // Musik & Timer anhalten (zur Sicherheit)
+  if (world && world.countdown) {
+    world.countdown.stopCountdown();
+  }
+
+  // Endscreen ausblenden (optional – Seite lädt gleich neu)
+  document.getElementById('end-screen').classList.add('hidden');
   document.getElementById('canvas').style.display = 'none';
-  document.getElementById('start-screen').classList.remove('hidden');
+  document.getElementById('game-name').style.display = 'none';
+  document.getElementById('start-screen').classList.add('hidden');
+
+  // 🔄 Seite komplett neu laden
+  location.reload();
 }
+
 
 
 /**
