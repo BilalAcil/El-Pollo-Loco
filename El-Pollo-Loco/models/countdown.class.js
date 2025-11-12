@@ -1,7 +1,7 @@
 class Countdown extends DrawableObject {
   constructor() {
     super();
-    this.currentMusic = "normal"; // "normal" oder "endboss"
+    this.currentMusic = "normal";
     this.imagePath = 'img/11_countdown/3208749.png';
     this.loadImage(this.imagePath);
 
@@ -10,12 +10,12 @@ class Countdown extends DrawableObject {
     this.x = 320;
     this.y = 22;
 
-    this.countdownTime = 300;     // Sekunden (5 Minuten)
+    this.countdownTime = 120; // Sekunden
     this.countdownInterval = null;
-    this.isStarted = false;       // ⚡ neu: Countdown startet erst beim Play
-    this.isPaused = false;        // speichert Pausenstatus
+    this.isStarted = false;
+    this.isPaused = false;
 
-    // 🎶 Hintergrundmusik (zwei Stück)
+    // 🎶 Hintergrundmusik
     this.bgMusic1 = new Audio('audio/background-sound-1.mp3');
     this.bgMusic2 = new Audio('audio/background-sound-2.mp3');
     this.bgMusic1.loop = true;
@@ -27,38 +27,56 @@ class Countdown extends DrawableObject {
     this.endBossMusic = new Audio('audio/endBoss-breich.mp3');
     this.endBossMusic.loop = true;
     this.endBossMusic.volume = 0.7;
-  }
 
+    // ⏰ NEU: Slow-Clock Sound (bei 1:00)
+    this.slowClockSound = new Audio('audio/slow-clock.mp3');
+    this.slowClockSound.volume = 0.7;
+
+    // ✨ NEU: Blinken
+    this.isBlinking = false;
+    this.blinkVisible = true;
+  }
   /**
    * Startet den Countdown und die Musik – nur einmal
    */
+
   startCountdown() {
-    if (this.isStarted) return; // schon gestartet
+    if (this.isStarted) return;
     this.isStarted = true;
     this.isPaused = false;
-
-    // 🎵 Normale Hintergrundmusik starten
     this.playBackgroundMusic();
 
-    // ⏳ Countdown-Zeit runterzählen
     this.countdownInterval = setInterval(() => {
-      if (this.isPaused) return; // Wenn pausiert, nicht runterzählen
-
+      if (this.isPaused) return;
       this.countdownTime--;
 
-      if (this.countdownTime <= 0) {
-        this.stopCountdown(); // Countdown & Musik stoppen
+      // ⏰ Trigger bei 1:00 (60 Sekunden)
+      if (this.countdownTime === 60) {
+        this.triggerOneMinuteWarning();
+      }
 
-        // Charakter "stirbt", wenn Zeit abgelaufen
-        if (this.world && this.world.character) {
-          this.world.character.energy = 0;
-          this.world.character.isDead = true;
-          this.world.character.playAnimation(this.world.character.IMAGES_DEAD);
+      // ⏰ NEU: Trigger auch bei 0:07 Sekunden
+      if (this.countdownTime === 7) {
+        this.triggerOneMinuteWarning();
+      }
+
+      if (this.countdownTime <= 0) {
+        this.stopCountdown();
+
+        if (this.world && this.world.character && !this.world.character.isDying) {
+          const pepe = this.world.character;
+          pepe.energy = 0;
           this.world.statusBar.setPercentage(0);
+          pepe.isDead = true;
+
+          // ❗ Keine Pause hier – einfach dieselbe Sequenz wie beim Endboss
+          pepe.playDeathAnimation();
+          pepe.startFallingWhenDead();
         }
       }
     }, 1000);
   }
+
 
   /**
    * 🎧 Startet normale Hintergrundmusik
@@ -75,6 +93,30 @@ class Countdown extends DrawableObject {
   }
 
   /**
+ * Wird aufgerufen, wenn Countdown bei 1:00 ist
+ */
+  triggerOneMinuteWarning() {
+    if (this.isBlinking) return; // falls bereits aktiv → nicht nochmal starten
+
+    console.log("⏰ Zeitwarnung aktiv!");
+    this.isBlinking = true;
+    this.slowClockSound.play().catch(e => console.warn(e));
+
+    let blinkCount = 0;
+    const blinkInterval = setInterval(() => {
+      this.blinkVisible = !this.blinkVisible;
+      blinkCount++;
+      if (blinkCount >= 7 * 2) { // 7 Blinks (an/aus)
+        clearInterval(blinkInterval);
+        this.isBlinking = false;
+        this.blinkVisible = true;
+      }
+    }, 500);
+  }
+
+
+
+  /**
    * 🛑 Countdown & Musik stoppen
    */
   stopCountdown() {
@@ -85,14 +127,15 @@ class Countdown extends DrawableObject {
     this.countdownTime = 0;
     this.isStarted = false;
 
-    this.bgMusic1.pause();
-    this.bgMusic2.pause();
-    this.endBossMusic.pause();
-
-    this.bgMusic1.currentTime = 0;
-    this.bgMusic2.currentTime = 0;
-    this.endBossMusic.currentTime = 0;
+    // 🎵 Alles stoppen
+    [this.bgMusic1, this.bgMusic2, this.endBossMusic, this.slowClockSound].forEach(audio => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
   }
+
 
   /**
    * 🔊 Wechselt zur Endboss-Musik
@@ -162,16 +205,20 @@ class Countdown extends DrawableObject {
   /**
    * ⏱ Zeit formatieren
    */
+  draw(ctx) {
+    super.draw(ctx);
+
+    // ⏱ Wenn blinkt → nur manchmal anzeigen
+    if (!this.isBlinking || this.blinkVisible) {
+      ctx.font = "24px comic sans serif";
+      ctx.fillStyle = "black";
+      ctx.fillText(this.formatTime(), this.x + this.width - 320, this.y + 2);
+    }
+  }
+
   formatTime() {
     const minutes = Math.floor(this.countdownTime / 60);
     const seconds = this.countdownTime % 60;
     return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-  }
-
-  draw(ctx) {
-    super.draw(ctx);
-    ctx.font = "24px comic sans serif";
-    ctx.fillStyle = "black";
-    ctx.fillText(this.formatTime(), this.x + this.width - 320, this.y + 2);
   }
 }
