@@ -70,11 +70,11 @@ function showEndScreen(win) {
 
   // 🎉 Sieg-Fall
   if (win) {
-    messageEl.textContent = '🎸 Du hast die Maracas zurückgeholt!';
+    messageEl.textContent = '🪇 Du hast die Maracas zurückgeholt! 🪇';
 
     // Buttons neu setzen
     buttonContainer.innerHTML = `
-      <h2 id="end-message">🎸 Du hast die Maracas zurückgeholt!</h2>
+      <h2 id="end-message">🪇 Du hast die Maracas zurückgeholt! 🪇</h2>
       <button onclick="nextLevel()">🎸 Gitarre holen</button>
       <button onclick="returnToHome()">🏠 Zurück zum Start</button>
     `;
@@ -99,9 +99,11 @@ function showEndScreen(win) {
  * Spiel neu starten
  */
 function restartGame() {
+  console.clear(); // 🧹 Konsole leeren
   document.getElementById('end-screen').classList.add('hidden');
   startGame();
 }
+
 
 function nextLevel() {
   // document.getElementById('end-screen').classList.add('hidden');

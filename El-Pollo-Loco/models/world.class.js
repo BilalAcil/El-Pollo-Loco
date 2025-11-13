@@ -374,21 +374,73 @@ class World {
         // Maracas verschwindet
         this.maracas = null;
 
-        // Alles anhalten (Countdown, Musik, Bewegungen)
-        if (this.countdown) this.countdown.stopCountdown();  // ⏹ Countdown & Musik stoppen
-        this.pauseAllMovements();                             // ❄️ Welt einfrieren
+        // 🎵 Musik & Countdown stoppen
+        if (this.countdown) this.countdown.stopCountdown();
 
-        // Sound abspielen
+        // 🎵 Sound abspielen
         const maracasSound = new Audio('audio/maracas.mp3');
         maracasSound.volume = 0.6;
-        maracasSound.playbackRate = 1.0;
         maracasSound.play().catch(e => console.warn('Maracas sound error:', e));
 
-        // 🎬 Sieg-Screen nach kurzer Verzögerung anzeigen
+        // ❄️ Alles einfrieren – außer Pepe
+        this.level.enemies.forEach(e => {
+          clearInterval(e.moveInterval);
+          clearInterval(e.animationInterval);
+        });
+        this.level.clouds.forEach(c => {
+          clearInterval(c.moveInterval);
+        });
+        this.keyboard.RIGHT = false;
+        this.keyboard.LEFT = false;
+        this.keyboard.SPACE = false;
+        this.keyboard.D = false;
+
+        // 🕺 Pepe-Referenz
+        const pepe = this.character;
+
+        // ✨ Funktion für Sprung mit Richtung
+        const doJump = (direction) => {
+          pepe.otherDirection = direction === 'left'; // Blickrichtung setzen
+          pepe.speedY = 25; // Sprunghöhe
+          pepe.applyGravity();
+
+          // Optional: Sprung-Sound
+          const jumpSound = new Audio('audio/jump.mp3');
+          jumpSound.volume = 0.5;
+          jumpSound.play().catch(() => { });
+        };
+
+        // 1️⃣ Sprung nach rechts (sofort)
+        doJump('right');
+
+        // 2️⃣ Sprung nach links (nach 600ms)
         setTimeout(() => {
-          this.endGame(true);
-        }, 2500);
+          doJump('left');
+        }, 600);
+
+        // 3️⃣ Sprung nach rechts (nach weiteren 600ms)
+        setTimeout(() => {
+          doJump('right');
+        }, 1200);
+
+        // 🚶‍♂️ Nach 1.8 Sekunden automatisch laufen
+        setTimeout(() => {
+          pepe.otherDirection = false; // schaut nach rechts
+
+          const walkInterval = setInterval(() => {
+            pepe.moveRight();                     // nutzt PePes Standardgeschwindigkeit (this.speed)
+            pepe.playAnimation(pepe.IMAGES_WALKING);
+          }, 1000 / 60); // 60 FPS
+
+          // 🎬 Nach 3 Sekunden Endscreen anzeigen & Bewegung stoppen
+          setTimeout(() => {
+            clearInterval(walkInterval);
+            this.endGame(true);
+          }, 500);
+
+        }, 1800);
       }
+
     }, 50);
   }
 
@@ -688,11 +740,14 @@ class World {
     // 🛑 Alles einfrieren
     this.pauseAllMovements();
 
-    // ⏱️ Nach kurzer Verzögerung Endscreen zeigen
+    // ⏱️ Unterschiedliche Verzögerung je nach Ausgang
+    const delay = win ? 1000 : 3000; // 1 Sekunde bei Sieg, 3 bei Niederlage
+
     setTimeout(() => {
       showEndScreen(win); // false = verloren, true = gewonnen
-    }, 3000);
+    }, delay);
   }
+
 
 
 

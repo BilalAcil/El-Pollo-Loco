@@ -427,11 +427,18 @@ class Character extends MovableObject {
     }
     this.animationFinished = false;
 
-    // 🎵 Death sound
+    // 🎵 Death-Sound + zusätzlicher Fail-Sound gleichzeitig abspielen
     setTimeout(() => {
+      // Haupt-Todessound
       this.deathSound = new Audio('audio/dead-sound.mp3');
       this.deathSound.volume = 0.6;
       this.deathSound.play().catch(e => console.warn('Death sound error:', e));
+
+      // Zusätzlicher Fail-Sound
+      this.failSound = new Audio('audio/Fail-2.mp3');
+      this.failSound.volume = 0.2;       // etwas lauter als der Todessound
+      this.failSound.playbackRate = 0.7; // Geschwindigkeit
+      this.failSound.play().catch(e => console.warn('Fail-2 sound error:', e));
     }, 500);
 
     let frameIndex = 0;
@@ -458,6 +465,7 @@ class Character extends MovableObject {
       }
     }, frameInterval);
   }
+
 
   // ★★★ NEW METHOD: Let Pepe fall when dead ★★★
   startFallingWhenDead() {
@@ -513,5 +521,4 @@ class Character extends MovableObject {
       }
     }, 1000 / 25);
   }
-
 }

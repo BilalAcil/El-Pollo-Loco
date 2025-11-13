@@ -244,8 +244,10 @@ h3 {
   background: #ffcc00;
   color: black;
   font-weight: bold;
-  width: 180px;
+  width: 190px;
   margin: 10px;
+  padding: 0;
+  ;
   transition: 0.2s;
 }
 
