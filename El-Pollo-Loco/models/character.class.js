@@ -223,41 +223,64 @@ class Character extends MovableObject {
 
     // Animation
     setInterval(() => {
+      // Wenn das Spiel/der Charakter gerade pausiert ist,
+      // wird die komplette Animationslogik übersprungen
       if (this.isPaused) return;  // ⏸ Animation einfrieren
-      // Wenn wir gerade werfen, soll die normale Animations-Logik nichts tun
+
+      // Wenn gerade ein Wurf ausgeführt wird (z.B. Flasche werfen),
+      // soll die normale Animationslogik nicht dazwischenfunken
       if (this.isThrowing) return;
 
-      // 👉 Neue, stabile Berechnung der Inaktivität
+      // 👉 Berechnung, wie lange der Spieler "effektiv" schon inaktiv ist
+      // (also seit der letzten Bewegung)
       let effectiveIdleTime = Date.now() - this.lastMoveTime;
 
-      // Wenn gerade pausiert war, ziehe nur die Zeit der letzten Pause ab
+      // Falls pausiert war, wird die Zeit, in der das Spiel pausiert war,
+      // von der Inaktivitäts-Zeit abgezogen, damit Pausen nicht als "idle" zählen.
       if (this.isPaused && this.pauseStartTime) {
         effectiveIdleTime -= (Date.now() - this.pauseStartTime);
       }
 
-      // 💤 Idle- oder Long-Idle-Logik
+      // 💤 Logik für Idle-Zustände (stehen) und Long-Idle (lange nichts gemacht)
+
+      // 1. Charakter ist tot → Todesanimation abspielen
       if (this.isDead()) {
-        this.stopLongIdleAnimation();
-        this.playDeathAnimation();
+        this.stopLongIdleAnimation();     // Long-Idle ggf. stoppen
+        this.playDeathAnimation();        // Todes-Animation starten
+
+        // 2. Charakter ist verletzt → Hurt-Animation
       } else if (this.isHurt()) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_HURT);
+
+        // 3. Charakter ist in der Luft → Sprung-Animation
       } else if (this.isAboveGround()) {
         this.stopLongIdleAnimation();
         this.handleJumpAnimation();
+
+        // 4. Charakter bewegt sich nach links oder rechts → Lauf-Animation
       } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
         this.stopLongIdleAnimation();
         this.playAnimation(this.IMAGES_WALKING);
+
+        // 5. Charakter steht länger als 12 Sekunden rum → Long-Idle-Animation
       } else if (effectiveIdleTime > 12000) {
+        // Nur starten, wenn sie noch nicht läuft
         if (!this.longIdleActive) this.startLongIdleAnimation();
+
+        // 6. Charakter steht länger als 10 Sekunden, aber weniger als 12 Sekunden → normale Idle-Animation
       } else if (effectiveIdleTime > 10000) {
+        // Nur einmal starten
         if (!this.idleAnimationStarted) this.playIdleAnimation();
+
+        // 7. Standardfall: Charakter steht, aber noch nicht lange genug für Idle/Long-Idle
       } else {
-        this.stopLongIdleAnimation();
-        this.loadImage(this.IMAGES_IDLE[0]);
+        this.stopLongIdleAnimation();       // sicherstellen, dass Long-Idle gestoppt ist
+        this.loadImage(this.IMAGES_IDLE[0]); // erstes Idle-Bild anzeigen
       }
 
-    }, 50);
+    }, 50); // Animations-Update alle 50ms (~20 FPS)
+
 
   }
 
