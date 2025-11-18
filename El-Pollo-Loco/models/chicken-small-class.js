@@ -24,18 +24,21 @@ class ChickenSmall extends MovableObject {
   }
 
   animate() {
-    // 🟢 Bewegung merken
+    // 🟢 Bewegung starten und merken
     this.moveInterval = setInterval(() => {
+      // Nur bewegen, wenn der Gegner noch lebt
       if (!this.isDead) {
-        this.moveLeft();
+        this.moveLeft(); // Gegner bewegt sich nach links
       }
-    }, 1000 / 60);
+    }, 1000 / 60); // 60 FPS = flüssige Bewegung
 
-    // 🟣 Animation merken
+    // 🟣 Animation starten und merken
     this.animationInterval = setInterval(() => {
+      // Nur animieren, wenn der Gegner noch lebt
       if (!this.isDead) {
-        this.playAnimation(this.IMAGES_WALKING);
+        this.playAnimation(this.IMAGES_WALKING); // Lauf-Animation abspielen
       }
-    }, 200);
+    }, 200); // Wechselt alle 200ms das Bild → typische Lauf-Animation
   }
+
 }

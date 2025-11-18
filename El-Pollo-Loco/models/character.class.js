@@ -244,7 +244,7 @@ class Character extends MovableObject {
       // 💤 Logik für Idle-Zustände (stehen) und Long-Idle (lange nichts gemacht)
 
       // 1. Charakter ist tot → Todesanimation abspielen
-      if (this.isDead()) {
+      if (this.energy <= 0) {
         this.stopLongIdleAnimation();     // Long-Idle ggf. stoppen
         this.playDeathAnimation();        // Todes-Animation starten
 
@@ -530,7 +530,7 @@ class Character extends MovableObject {
   applyGravity() {
     setInterval(() => {
       // 🧠 Wenn Pepe stirbt oder tot ist → keine Gravitation mehr
-      if (this.isDead() || this.isDying) {
+      if (this.energy <= 0 || this.isDying) {
         return;
       }
 
