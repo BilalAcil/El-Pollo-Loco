@@ -490,34 +490,40 @@ class Character extends MovableObject {
   }
 
 
-  // ★★★ NEW METHOD: Let Pepe fall when dead ★★★
+  // ★★★ NEUE METHODE: Pepe soll fallen, wenn er tot ist ★★★
   startFallingWhenDead() {
-    // Stop multiple intervals
+    // Verhindert, dass mehrere Intervalle gleichzeitig laufen
     if (this.fallingInterval) return;
 
+    // Intervall starten (30 Mal pro Sekunde)
     this.fallingInterval = setInterval(() => {
+      // Wenn Pepe tot oder im Sterben ist …
       if (this.isDead || this.isDying) {
-        this.y += 3; // speed of the fall
+        this.y += 3; // Geschwindigkeit des Fallens
 
-        // remove when fully off-screen
+        // Sobald Pepe komplett außerhalb des Bildschirms ist …
         if (this.y > 600) {
-          clearInterval(this.fallingInterval);
-          this.removeFromWorld();
+          clearInterval(this.fallingInterval); // Intervall stoppen
+          this.removeFromWorld(); // Aus der Spielwelt entfernen
         }
       }
-    }, 1000 / 30); // 30 FPS
+    }, 1000 / 30); // 30 FPS (Bilder pro Sekunde)
   }
 
-  // ★★★ NEW METHOD: Remove from world ★★★
+  // ★★★ NEUE METHODE: Aus der Spielwelt entfernen ★★★
   removeFromWorld() {
     if (this.world) {
+      // Index des Gegners im Array finden
       const index = this.world.level.enemies.indexOf(this);
+
+      // Wenn Pepe existiert, entferne ihn aus dem Array
       if (index > -1) {
         this.world.level.enemies.splice(index, 1);
-        console.log("🗑️ Pepe removed from world!");
+        console.log("🗑️ Pepe wurde aus der Welt entfernt!");
       }
     }
   }
+
 
 
 
