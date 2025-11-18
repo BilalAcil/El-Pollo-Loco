@@ -166,11 +166,14 @@ class Countdown extends DrawableObject {
       if (this.bgMusic1 && !this.bgMusic1.paused) this.bgMusic1.pause();
       if (this.bgMusic2 && !this.bgMusic2.paused) this.bgMusic2.pause();
       if (this.endBossMusic && !this.endBossMusic.paused) this.endBossMusic.pause();
+      if (this.slowClockSound && !this.slowClockSound.paused) this.slowClockSound.pause(); // ⬅️ HIER NEU!
+
       console.log("🎵 Alle Musik pausiert (Position beibehalten).");
     } catch (e) {
       console.warn("Fehler beim Pausieren der Musik:", e);
     }
   }
+
 
   resumeAllMusic() {
     try {
@@ -179,12 +182,17 @@ class Countdown extends DrawableObject {
       } else {
         this.bgMusic1.play().catch(e => console.warn("bgMusic1 Resume-Fehler:", e));
         this.bgMusic2.play().catch(e => console.warn("bgMusic2 Resume-Fehler:", e));
+
+        if (this.isBlinking) {  // Nur, wenn Slow-Clock aktiv ist
+          this.slowClockSound.play().catch(e => console.warn("slowClock Resume-Fehler:", e));
+        }
       }
       console.log("🎵 Musik fortgesetzt.");
     } catch (e) {
       console.warn("Fehler beim Fortsetzen der Musik:", e);
     }
   }
+
 
 
   /**
