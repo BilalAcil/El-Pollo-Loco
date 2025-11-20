@@ -63,21 +63,46 @@ class World {
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
-    // Endboss & StatusBar Referenz setzen
+    // 🆕 CHICKENS NEU ERSTELLEN!
+    const chickens = this.generateChickens();
+
+    //  Restliche Gegner (z.B. Endboss) aus Level übernehmen:
+    this.level.enemies = [
+      ...chickens,                        // 🐔 erst neue Chickens
+      ...this.level.enemies.filter(e => e instanceof Endboss || e instanceof EndBossStatusBar) // dann Endboss
+    ];
+
+    // Endboss & Statusbar neu verknüpfen
     this.endboss = this.level.enemies.find(e => e instanceof Endboss);
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
 
     if (this.endboss) {
       this.endboss.world = this;
-      this.endboss.energy = 100;        // ← ENERGIE RESET !!!
-      this.endboss.isDead = false;      // ← Falls er vorher tot war
+      this.endboss.energy = 100;
+      this.endboss.isDead = false;
     }
 
     if (this.endbossBar) {
       this.endbossBar.world = this;
-      this.endbossBar.setPercentage(100);  // ← Anzeige reset
+      this.endbossBar.setPercentage(100);
     }
   }
+
+
+  generateChickens() {
+    const chickens = [];
+
+    // z.B. 6 normale + 4 kleine
+    for (let i = 0; i < 8; i++) {
+      chickens.push(new Chicken());
+    }
+    for (let i = 0; i < 4; i++) {
+      chickens.push(new ChickenSmall());
+    }
+
+    return chickens;
+  }
+
 
 
 
