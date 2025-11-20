@@ -99,10 +99,12 @@ function showEndScreen(win) {
  * Spiel neu starten
  */
 function restartGame() {
-  console.clear(); // 🧹 Konsole leeren
+  console.clear();
   document.getElementById('end-screen').classList.add('hidden');
-  startGame();
+  startGame();         // neue World wird erstellt → Statusbar setzt sich dort auf 100%
 }
+
+
 
 
 function nextLevel() {

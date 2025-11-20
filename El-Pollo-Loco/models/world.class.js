@@ -68,13 +68,17 @@ class World {
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
 
     if (this.endboss) {
-      this.endboss.world = this; // ✅ WICHTIG! Damit Endboss auf this.world zugreifen kann
+      this.endboss.world = this;
+      this.endboss.energy = 100;        // ← ENERGIE RESET !!!
+      this.endboss.isDead = false;      // ← Falls er vorher tot war
     }
 
     if (this.endbossBar) {
       this.endbossBar.world = this;
+      this.endbossBar.setPercentage(100);  // ← Anzeige reset
     }
   }
+
 
 
   checkCollisions() {
