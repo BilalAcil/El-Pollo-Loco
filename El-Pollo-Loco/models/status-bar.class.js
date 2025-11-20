@@ -12,6 +12,7 @@ class StatusBar extends DrawableObject {
   ];
 
   percentage = 100; // Initial health percentage
+  blinkInterval = null;   // ⬅️ NEU – Referenz zum Interval speichern
 
   constructor() {
     super();
@@ -54,22 +55,36 @@ class StatusBar extends DrawableObject {
     let blinkCount = 0;
     const totalBlinks = 8; // 3 grüne Blinks (jeweils hin und zurück)
 
-    const blinkInterval = setInterval(() => {
-      // Umschalten zwischen normal und grün
+    // 🔥 Falls ein altes Intervall noch läuft → stoppen!
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+      this.blinkInterval = null;
+      this.img = normalImage;
+    }
+
+    this.blinkInterval = setInterval(() => {
       this.img = this.img === greenImage ? normalImage : greenImage;
 
-      // Wenn gerade auf grün umgeschaltet wurde, erhöhen wir den Zähler
-      if (this.img === greenImage) {
-        blinkCount++;
-      }
+      if (this.img === greenImage) blinkCount++;
 
-      // Nach 3 grünen Blinkvorgängen stoppen
       if (blinkCount >= totalBlinks) {
-        clearInterval(blinkInterval);
-        this.img = normalImage; // Zurück zu Standardanzeige
+        clearInterval(this.blinkInterval);
+        this.blinkInterval = null;
+        this.img = normalImage;
       }
-    }, 300); // Blinkgeschwindigkeit (300ms pro Umschaltung)
+    }, 300);
   }
 
+  // 🆕 NEU:  SOFORT STOPPEN!
+  stopBlink() {
+    const normalImage = this.imageCache['img/7_statusbars/1_statusbar/2_statusbar_health/blue/100.png'];
+
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+      this.blinkInterval = null;
+    }
+
+    this.img = normalImage;  // zurück zur normalen Ansicht
+  }
 }
 

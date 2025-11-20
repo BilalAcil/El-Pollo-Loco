@@ -212,25 +212,27 @@ class World {
             if (!this.lastEndbossHit || now - this.lastEndbossHit > 1000) {
               this.lastEndbossHit = now;
 
+              // ⛔ HIER NEU: Heilung abbrechen falls gerade aktiv
+              if (this.statusBar.stopBlink) this.statusBar.stopBlink();
+              this.healSound.pause();
+              this.healSound.currentTime = 0;
+
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
 
-              // 🧩 HIER NEU:
               if (this.character.energy <= 0) {
                 this.character.isDead = true;
                 this.statusBar.setPercentage(0);
 
-                // 👉 Todesanimation + Fallen starten
                 this.character.playDeathAnimation();
                 this.character.startFallingWhenDead();
-
-                // 👉 Endscreen anzeigen nach Tod
                 this.endGame(false);
               }
             }
           }
         });
       }
+
 
       // 🔥 VERBESSERT: Normale Gegner mit COOLDOWN
       // 👇 verhindert, dass sofort nach einem Sprung Schaden ausgelöst wird
@@ -250,7 +252,12 @@ class World {
             // 🔥 Bisheriger Gegner-spezifischer Cooldown
             if (!this.lastEnemyHit || now - this.lastEnemyHit > 800) {
               this.lastEnemyHit = now;
-              this.character.lastGlobalHit = now; // 🕒 Zeitpunkt global speichern
+              this.character.lastGlobalHit = now;
+
+              // ⛔ Heilung abbrechen (Blink & Sound stoppen)
+              if (this.statusBar.stopBlink) this.statusBar.stopBlink();
+              this.healSound.pause();
+              this.healSound.currentTime = 0;
 
               this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
@@ -259,14 +266,10 @@ class World {
                 this.character.isDead = true;
                 this.statusBar.setPercentage(0);
 
-                // 👉 Death animation + falling start
                 this.character.playDeathAnimation();
                 this.character.startFallingWhenDead();
-
-                // 👉 Endscreen anzeigen nach Tod
                 this.endGame(false);
               }
-
             }
             return;
           }
