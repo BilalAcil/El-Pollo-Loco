@@ -58,30 +58,47 @@ function toggleMute() {
  * @param {boolean} win - true = gewonnen, false = verloren
  */
 function showEndScreen(win) {
-  stopGame(); // beendet den Loop, falls vorhanden
+  // ❗ Daten zuerst retten, bevor die Welt zerstört wird
+  const coinCount = world?.statusBarCoin?.coinCount ?? 0;
+  const salsaCount = world?.statusBarSalsa?.salsaCount ?? 0;
+
+  stopGame();
 
   const endScreen = document.getElementById('end-screen');
   const messageEl = document.getElementById('end-message');
   const buttonContainer = endScreen.querySelector('.menu-box');
+  const statsBox = document.getElementById('stats-box'); // Element ist im HTML vorhanden!
 
-  // Canvas & UI ausblenden
   document.getElementById('canvas').style.display = 'none';
   document.getElementById('game-name').style.display = 'none';
 
-  // 🎉 Sieg-Fall
+  // 🧹 StatsBox am Anfang immer leeren
+  statsBox.innerHTML = "";
+
   if (win) {
     messageEl.textContent = '🪇 Du hast die Maracas zurückgeholt! 🪇';
 
-    // Buttons neu setzen
+    statsBox.innerHTML = `
+  <p><span class="stats-coin">🪙 <b>${world.statusBarCoin.coinCount}</b>x</span></p>
+  <p><span class="stats-salsa">🌶️ <b>${world.statusBarSalsa.salsaCount}</b>x</span></p>
+`;
+
+    statsBox.classList.remove('hidden');
+
+    // ❗ ZUERST Buttons erzeugen …
     buttonContainer.innerHTML = `
       <h2 id="end-message">🪇 Du hast die Maracas zurückgeholt! 🪇</h2>
       <button onclick="nextLevel()">🎸 Gitarre holen</button>
       <button onclick="returnToHome()">🏠 Zurück zum Start</button>
     `;
-  }
-  // 💀 Verlust-Fall
-  else {
+
+    // … DANN statsBox wieder anhängen!
+    buttonContainer.appendChild(statsBox);
+
+  } else {
     messageEl.textContent = '💀 Du hast verloren!';
+    statsBox.classList.add('hidden');
+
     buttonContainer.innerHTML = `
       <h2 id="end-message">💀 Du hast verloren!</h2>
       <button onclick="restartGame()">🔁 Nochmal spielen</button>
@@ -89,10 +106,8 @@ function showEndScreen(win) {
     `;
   }
 
-  // Endscreen einblenden
   endScreen.classList.remove('hidden');
 }
-
 
 
 /**
@@ -100,9 +115,20 @@ function showEndScreen(win) {
  */
 function restartGame() {
   console.clear();
+
+  // 🛠 stats-box neu erstellen!
+  const oldStatsBox = document.getElementById('stats-box');
+  if (oldStatsBox) oldStatsBox.remove();
+
+  const newStatsBox = document.createElement('div');
+  newStatsBox.id = "stats-box";
+  newStatsBox.classList.add("hidden");
+  document.querySelector('#end-screen .menu-box').appendChild(newStatsBox);
+
   document.getElementById('end-screen').classList.add('hidden');
-  startGame();         // neue World wird erstellt → Statusbar setzt sich dort auf 100%
+  startGame();
 }
+
 
 
 

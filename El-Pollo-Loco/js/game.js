@@ -44,8 +44,9 @@ function stopGame() {
   if (world && world.stop) {
     world.stop();
   }
-  world = null;
+  // ❗ world NICHT sofort auf null setzen!
 }
+
 
 // === Tasteneingaben erfassen ===
 window.addEventListener('keydown', (e) => {

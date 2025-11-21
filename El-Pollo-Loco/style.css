@@ -255,3 +255,33 @@ h3 {
   background: #ffd633;
   transform: scale(1.05);
 }
+
+#stats-box {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-size: 1.2rem;
+  border: 2px solid #ffcc00;
+}
+
+#stats-box b {
+  color: #ffcc00;
+  font-size: 1.5rem;
+}
+
+.stats-coin {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.7rem;
+  color: gold;
+  text-shadow: 0 0 8px gold;
+}
+
+.stats-salsa {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 1.7rem;
+  color: gold;
+  text-shadow: 0 0 8px gold;
+}
