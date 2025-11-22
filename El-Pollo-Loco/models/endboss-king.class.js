@@ -22,17 +22,16 @@ class EndbossKing extends MovableObject {
   }
 
   animate() {
-    setInterval(() => {
-      if (this.world && this.world.character.x >= 3800) {
-        this.isAwake = true;
-        this.startMoving();
-      }
+    this.isAwake = true;          // sofort startbereit
+    this.startMoving();           // Bewegung starten
 
+    setInterval(() => {
       if (this.isAwake) {
         this.playAnimation(this.IMAGES_WALK);
       }
     }, 180);
   }
+
 
   startMoving() {
     if (this.moveInterval) return;
@@ -40,23 +39,23 @@ class EndbossKing extends MovableObject {
     this.moveInterval = setInterval(() => {
       if (!this.isAwake) return;
 
-      // Wenn nach links laufen soll
       if (this.movingLeft) {
         this.moveLeft();
+        this.otherDirection = false;        // Blick nach links
 
-        if (this.x <= 4000) {            // Grenze erreicht
-          this.movingLeft = false;       // Richtung wechseln
+        if (this.x <= 4000) {               // Grenze links
+          this.movingLeft = false;
         }
 
       } else {
         this.moveRight();
+        this.otherDirection = true;         // Blick nach rechts (SPIEGELUNG!)
 
-        if (this.x >= 4400) {            // Grenze erreicht
-          this.movingLeft = true;        // Richtung wechseln
+        if (this.x >= 4600) {               // Grenze rechts
+          this.movingLeft = true;
         }
       }
 
     }, 1000 / 60);
   }
-
 }

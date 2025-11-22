@@ -61,6 +61,7 @@ class World {
 
   setWorld() {
     this.character.world = this;
+    this.endbossKing.world = this;   // <<< FEHLT!
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
