@@ -10,6 +10,7 @@ class World {
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
+  endbossKing = new EndbossKing(); // Neuer Boss King
   corncob = new Corncob();
   chickenNest = new ChickenNest();
   coins = []; // mehrere Münzen statt einer
@@ -529,6 +530,7 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
+    this.addToMap(this.endbossKing); // Neuer Boss King
     this.addToMap(this.chickenNest);
     if (this.maracas) {
       this.addToMap(this.maracas);

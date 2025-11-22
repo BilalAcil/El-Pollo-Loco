@@ -23,6 +23,7 @@ const level1 = new Level(
     new ChickenSmall(),
     new ChickenSmall(),
     new Endboss(),
+    new EndbossKing(),    // 🆕 neuer Boss King !!!
     new EndBossStatusBar()
   ],
   generateClouds(10000),
