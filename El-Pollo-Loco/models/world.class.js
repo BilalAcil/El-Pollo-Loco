@@ -10,7 +10,7 @@ class World {
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
-  endbossKing = new EndbossKing(); // Neuer Boss King
+  bodyguard = new Bodyguard(); // Neuer Bodyguard
   corncob = new Corncob();
   chickenNest = new ChickenNest();
   coins = []; // mehrere Münzen statt einer
@@ -61,7 +61,7 @@ class World {
 
   setWorld() {
     this.character.world = this;
-    this.endbossKing.world = this;
+    this.bodyguard.world = this;
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
@@ -531,7 +531,7 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
-    this.addToMap(this.endbossKing); // Neuer Boss King
+    this.addToMap(this.bodyguard); // Neuer Bodyguard
     this.addToMap(this.chickenNest);
     if (this.maracas) {
       this.addToMap(this.maracas);
@@ -705,7 +705,7 @@ class World {
     // Pepe & Endboss pausieren
     if (this.character) this.character.pause();
     if (this.endboss) this.endboss.pause();
-    if (this.endbossKing) this.endbossKing.pause();   // 🟢 NEU
+    if (this.bodyguard) this.bodyguard.pause();
 
     // ⏸ Musik und Countdown
     if (this.countdown) {
@@ -758,7 +758,7 @@ class World {
     // Pepe & Endboss fortsetzen
     if (this.character) this.character.resume();
     if (this.endboss) this.endboss.resume();
-    if (this.endbossKing) this.endbossKing.resume();   // 🟢 NEU
+    if (this.bodyguard) this.bodyguard.resume();
 
     // ▶️ Musik und Countdown fortsetzen
     if (this.countdown) {

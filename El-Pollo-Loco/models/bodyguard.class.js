@@ -1,4 +1,4 @@
-class EndbossKing extends MovableObject {
+class Bodyguard extends MovableObject {
 
   height = 190;
   width = 140;
