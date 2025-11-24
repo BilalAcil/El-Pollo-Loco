@@ -23,19 +23,13 @@ function init() {
 function startGameLogic() {
   canvas = document.getElementById('canvas');
   world = new World(canvas, keyboard);
-  console.log("🎮 Spiel gestartet!");
 
-  // 🖱️ Klick auf Canvas = Pause/Play Toggle
-  canvas.addEventListener("click", () => {
+  canvas.onclick = () => {   // ersetzt alten Listener automatisch!
     if (!world) return;
-
-    if (world.isPaused) {
-      world.resumeGame();   // ▶️ Spiel fortsetzen
-    } else {
-      world.pauseGame();    // ⏸️ Spiel pausieren
-    }
-  });
+    world.isPaused ? world.resumeGame() : world.pauseGame();
+  };
 }
+
 
 /**
  * Stoppt das Spiel (z. B. bei Game Over)
