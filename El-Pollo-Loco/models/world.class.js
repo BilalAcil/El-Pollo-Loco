@@ -61,7 +61,7 @@ class World {
 
   setWorld() {
     this.character.world = this;
-    this.endbossKing.world = this;   // <<< FEHLT!
+    this.endbossKing.world = this;
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
@@ -705,6 +705,7 @@ class World {
     // Pepe & Endboss pausieren
     if (this.character) this.character.pause();
     if (this.endboss) this.endboss.pause();
+    if (this.endbossKing) this.endbossKing.pause();   // 🟢 NEU
 
     // ⏸ Musik und Countdown
     if (this.countdown) {
@@ -757,6 +758,7 @@ class World {
     // Pepe & Endboss fortsetzen
     if (this.character) this.character.resume();
     if (this.endboss) this.endboss.resume();
+    if (this.endbossKing) this.endbossKing.resume();   // 🟢 NEU
 
     // ▶️ Musik und Countdown fortsetzen
     if (this.countdown) {
