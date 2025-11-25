@@ -23,7 +23,8 @@ const level1 = new Level(
     new ChickenSmall(),
     new ChickenSmall(),
     new Endboss(),
-    new EndBossStatusBar()
+    new EndBossStatusBar(),
+    new Bodyguard()
   ],
   generateClouds(10000),
 

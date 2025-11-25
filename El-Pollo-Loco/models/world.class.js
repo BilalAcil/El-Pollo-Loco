@@ -12,6 +12,7 @@ class World {
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
   corncob = new Corncob();
   chickenNest = new ChickenNest();
+  bodyguard = new Bodyguard();
   coins = []; // mehrere Münzen statt einer
   salsas = []; // mehrere Salsaflaschen
   throwableObjects = [];
@@ -529,6 +530,7 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
+    this.addToMap(this.bodyguard);
     this.addToMap(this.chickenNest);
     if (this.maracas) {
       this.addToMap(this.maracas);

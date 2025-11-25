@@ -200,8 +200,14 @@ class Character extends MovableObject {
       if (this.x >= 4100 && !this.atEndboss) {
         this.atEndboss = true;
 
+        // Musik abspielen
         if (this.world && this.world.countdown) {
           this.world.countdown.playEndBossMusic();
+        }
+
+        // 📌 BODYGUARD herunterspringen lassen
+        if (this.world.bodyguard) {
+          this.world.bodyguard.jumpToEndboss(); // Neue Methode (unten)
         }
       }
 
