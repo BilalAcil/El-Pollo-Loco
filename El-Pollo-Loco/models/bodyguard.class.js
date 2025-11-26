@@ -40,7 +40,7 @@ class Bodyguard extends MovableObject {
     this.isJumping = true;
 
     // 🔊 Sound: Bodyguard springt runter
-    this.bodyguardSound.currentTime = 0.5;   // optional: immer von vorne
+    this.bodyguardSound.currentTime = 0;   // optional: immer von vorne
     this.bodyguardSound.play();
 
     // Sprungkraft
@@ -68,13 +68,19 @@ class Bodyguard extends MovableObject {
         this.speedX = 0;
 
         // 🔊 Sound: Aufprall-Boom
-        this.boomSound.currentTime = 0;   // optional
+        this.boomSound.currentTime = 0;
         this.boomSound.play();
+
+        // 👉 ALLE Objekte kurz hüpfen lassen
+        if (this.world) {
+          this.world.jumpFromShock();   // 🚀 SCHOCK-EFFEKT HIER
+        }
 
         this.landAnimation();
         this.isJumping = false;
         clearInterval(interval);
       }
+
 
     }, 40);
   }

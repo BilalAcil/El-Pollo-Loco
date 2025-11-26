@@ -26,6 +26,7 @@ class World {
     // Welt zeichnen und initialisieren
     this.draw();
     this.setWorld();
+    this.bodyguard.world = this; // Bodyguard kennt jetzt die Welt
     this.countdown.world = this; // Countdown kennt jetzt die Welt
     this.checkCollisions();
     this.lastEnemyHit = 0;
@@ -844,5 +845,68 @@ class World {
   hidePlaySymbol() {
     const overlay = document.getElementById("play-overlay");
     if (overlay) overlay.remove();
+  }
+
+
+
+  // ⚡ ALLE Figuren kurz hüpfen lassen (Bodyguard landet)
+  jumpFromShock() {
+    // 🧍 Pepe
+    if (this.character) {
+      let bounce = 0;
+      const bounceInterval = setInterval(() => {
+        this.character.y -= 2;
+        bounce++;
+        if (bounce >= 4) {
+          clearInterval(bounceInterval);
+          this.character.y += 8;
+        }
+      }, 30);
+    }
+
+    // 🐔 Endboss Bounce-Effekt
+    if (this.level && this.level.enemies) {
+      this.level.enemies.forEach(enemy => {
+        if (enemy instanceof Endboss) {
+          enemy.playAnimation(enemy.IMAGES_HURT);
+
+          let originalY = enemy.y;
+          let bounce = 0;
+          const bounceInterval = setInterval(() => {
+            enemy.y -= 3;
+            bounce++;
+            if (bounce >= 4) {
+              clearInterval(bounceInterval);
+              enemy.y = originalY;
+            }
+          }, 30);
+        }
+      });
+    }
+
+    // 🪺 Chicken-Nest
+    if (this.chickenNest) {
+      const originalY = this.chickenNest.y;
+      this.chickenNest.y -= 10;
+      setTimeout(() => {
+        this.chickenNest.y = originalY;
+      }, 150);
+    }
+
+    // 🌽 Corncob → Bounce statt echter Sprung
+    if (this.corncob) {
+      let originalY = this.corncob.y;
+      let bounce = 0;
+      const bounceInterval = setInterval(() => {
+        this.corncob.y -= 2;
+        bounce++;
+        if (bounce >= 4) {
+          clearInterval(bounceInterval);
+          this.corncob.y = originalY;
+        }
+      }, 30);
+    }
+
+    console.log('💥 Schock ausgelöst!');
   }
 }
