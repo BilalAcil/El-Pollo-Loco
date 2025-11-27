@@ -4,10 +4,8 @@ class Level {
   backgroundObjects;
   corncobs;
   level_end_x;
-  bodyguards;
 
-  constructor(enemies, clouds, backgroundObjects, corncobs = [], bodyguards, level_end_x = 4500) {
-    this.bodyguards = bodyguards;
+  constructor(enemies, clouds, backgroundObjects, corncobs = [], level_end_x = 4500) {
     this.enemies = enemies;
     this.clouds = clouds;
     this.backgroundObjects = backgroundObjects;
