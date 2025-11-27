@@ -20,14 +20,29 @@ class DrawableObject {
 
 
   drawFrame(ctx) {
-    if (this instanceof Character || this instanceof Chicken || this instanceof Endboss || this instanceof ChickenSmall || this instanceof Corncob || this instanceof Coin || this instanceof Salsa) {
+    if (
+      this instanceof Character ||
+      this instanceof Chicken ||
+      this instanceof Endboss ||
+      this instanceof ChickenSmall ||
+      this instanceof Corncob ||
+      this instanceof Coin ||
+      this instanceof Salsa ||
+      this instanceof Maracas ||
+      this instanceof Bodyguard
+    ) {
       ctx.beginPath();
       ctx.lineWidth = "1";
       ctx.strokeStyle = "red";
-      ctx.rect(0, 0, this.width, this.height);
+
+      // 🔥 Nur beim Bodyguard Rahmen etwas nach unten verschieben
+      let offsetY = this instanceof Bodyguard ? 30 : 0;
+
+      ctx.rect(0, offsetY, this.width, this.height - offsetY);
       ctx.stroke();
     }
   }
+
 
 
   loadImages(arr) {
