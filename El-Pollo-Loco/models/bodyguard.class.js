@@ -2,6 +2,8 @@ class Bodyguard extends MovableObject {
   height = 180;
   width = 160;
   y = 150;
+  energy = 100;   // ★ NEU: Bodyguard kann sterben (z.B. nach 1 Treffer)
+  isDead = false;
   isJumping = false;
 
   // 🔊 Sounds
@@ -138,6 +140,63 @@ class Bodyguard extends MovableObject {
       }
 
     }, 60);
+  }
+
+  get collisionBox() {
+    return {
+      x: this.x,
+      y: this.y + 30, // 🔥 Box etwas nach unten verschieben
+      width: this.width,
+      height: this.height - 30
+    };
+  }
+
+
+
+  hit() {
+    if (this.isDead) return;
+    this.energy -= 25; // oder 100 direkt killen
+
+    if (this.energy <= 0) {
+      this.die();
+    }
+  }
+
+  die() {
+    this.isDead = true;
+    clearInterval(this.attackInterval);   // stoppe Bewegung!
+    this.playAnimation(this.IMAGES_LAND); // kleine Todesanimation
+    this.startFallingWhenDead();          // WIE ENDBOSS!
+  }
+
+  startFallingWhenDead() {
+    if (this.fallInterval) return;
+    let fallSpeed = 0;
+
+    this.fallInterval = setInterval(() => {
+      if (this.isPaused || (this.world && this.world.isPaused)) return;
+
+      if (this.isDead) {
+        fallSpeed += 0.5;
+        this.y += fallSpeed;
+
+        if (this.y > 600) {
+          clearInterval(this.fallInterval);
+          this.removeFromWorld();
+        }
+      }
+    }, 1000 / 30);
+  }
+
+
+  removeFromWorld() {
+    if (this.world) {
+      const i = this.world.level.enemies.indexOf(this);
+      if (i > -1) {
+        this.world.level.enemies.splice(i, 1);
+        console.log("🗑️ Bodyguard wurde entfernt!");
+      }
+    }
   }
 
 

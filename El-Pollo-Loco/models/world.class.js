@@ -65,16 +65,17 @@ class World {
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
-    // 🆕 CHICKENS NEU ERSTELLEN!
     const chickens = this.generateChickens();
 
-    //  Restliche Gegner (z.B. Endboss) aus Level übernehmen:
+    //  Restliche Gegner (z.B. Endboss) + Bodyguard übernehmen:
     this.level.enemies = [
-      ...chickens,                        // 🐔 erst neue Chickens
-      ...this.level.enemies.filter(e => e instanceof Endboss || e instanceof EndBossStatusBar) // dann Endboss
+      ...chickens,                                                // 🐔 Chickens
+      this.bodyguard,                                             // 🛡️ Bodyguard HINZUFÜGEN
+      ...this.level.enemies.filter(e =>
+        e instanceof Endboss || e instanceof EndBossStatusBar
+      )                                                           // 🦹‍♂️ Endboss + HP-Bar
     ];
 
-    // Endboss & Statusbar neu verknüpfen
     this.endboss = this.level.enemies.find(e => e instanceof Endboss);
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
 
@@ -89,6 +90,7 @@ class World {
       this.endbossBar.setPercentage(100);
     }
   }
+
 
 
   generateChickens() {
@@ -115,6 +117,7 @@ class World {
       let characterHitEndbossFromAbove = false;
 
       this.level.enemies.forEach((enemy, index) => {
+
         // 🟥 FALL 1: Endboss
         if (enemy instanceof Endboss) {
           if (this.character.isColliding(enemy)) {
@@ -139,10 +142,9 @@ class World {
               }
 
               // Rückstoß nach links
-              this.character.speedY = 20;       // nach oben schleudern
-              this.character.speedX = -15;      // Stoß nach links
-              this.character.knockbackActive = true; // aktiviert Bewegung
-
+              this.character.speedY = 20;
+              this.character.speedX = -15;
+              this.character.knockbackActive = true;
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
@@ -152,21 +154,48 @@ class World {
                   enemy.onDeath();
                 }
 
-                // 💥 Todesfall startet langsames Fallen
                 enemy.startFallingWhenDead();
               }
-
             }
-
           }
+        }
 
-          // 🟨 FALL 2: Normale Gegner (Chicken usw.) - AUSSCHLIESSEN von StatusBars und anderen Objekten
-        } else {
+        // 🟦 FALL 2: BODYGUARD – genauso behandeln wie Endboss!
+        else if (enemy instanceof Bodyguard) {
+          if (this.character.isColliding(enemy)) {
+
+            console.log("🛑 Kollision mit Bodyguard entdeckt!", enemy.x, enemy.y);
+
+            const characterBottom = this.character.y + this.character.height;
+            const enemyTop = enemy.y;
+            const enemyMiddle = enemy.y + enemy.height / 2;
+
+            const hitFromAbove =
+              this.character.isAboveGround() &&
+              this.character.speedY < 0 &&
+              characterBottom < enemyMiddle &&
+              characterBottom > enemyTop - 15;
+
+            if (hitFromAbove && !enemy.isDead) {
+              enemy.hit?.();          // Bodyguard verliert Energie / stirbt
+              this.character.speedY = 20; // Rückstoß
+              this.character.speedX = -15;
+            }
+            else if (!enemy.isDead) {
+              this.character.hit();      // Pepe bekommt Schaden
+              this.statusBar.setPercentage(this.character.energy);
+            }
+          }
+        }
+
+        // 🟨 FALL 3: andere Gegner (Chicken usw.)
+        else {
           if (this.isActualEnemy(enemy) && this.character.isColliding(enemy) && !enemy.isDead) {
             collidedEnemies.push({ enemy, index });
           }
         }
-      });
+
+      }); // forEach ENDE
 
       // 🔥 VERBESSERTE Logik für normale Gegner
       let characterJumpedOnEnemy = false;
