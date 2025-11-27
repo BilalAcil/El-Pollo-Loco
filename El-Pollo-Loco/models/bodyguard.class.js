@@ -21,6 +21,13 @@ class Bodyguard extends MovableObject {
     'img/4_enemie_boss_chicken/3_attack/G13.png'
   ];
 
+  IMAGES_WALK = [
+    'img/4_enemie_boss_chicken/1_walk/G1.png',
+    'img/4_enemie_boss_chicken/1_walk/G2.png',
+    'img/4_enemie_boss_chicken/1_walk/G3.png',
+    'img/4_enemie_boss_chicken/1_walk/G4.png'
+  ];
+
   constructor() {
     super();
     this.x = 4700;
@@ -32,7 +39,11 @@ class Bodyguard extends MovableObject {
     this.loadImages(this.IMAGES_JUMP_UP);
     this.loadImages(this.IMAGES_JUMP_HOVER);
     this.loadImages(this.IMAGES_LAND);
+
+    // 🟢 NEU: WALK-Bilder vorladen!
+    this.loadImages(this.IMAGES_WALK);
   }
+
 
 
   jumpToEndboss() {
@@ -80,22 +91,47 @@ class Bodyguard extends MovableObject {
         this.isJumping = false;
         clearInterval(interval);
       }
-
-
     }, 40);
   }
 
 
   landAnimation() {
     this.playAnimation(this.IMAGES_LAND);
+
     setTimeout(() => {
       this.loadImage('img/4_enemie_boss_chicken/3_attack/G13.png');
+
+      // Nach 1 Sekunde Endlosschleife starten
+      setTimeout(() => {
+        this.startAttackLoop();
+      }, 1000);
+
     }, this.IMAGES_LAND.length * 100);
   }
 
 
-  // Bodenprüfung
-  isAboveGround() {
-    return this.y < 260;
+
+  startAttackLoop() {
+    this.speedX = -10;
+    this.otherDirection = false; // Blick nach links
+
+    this.attackInterval = setInterval(() => {
+      this.playAnimation(this.IMAGES_WALK);
+      this.x += this.speedX;
+
+      // LINKS ► RECHTS
+      if (this.x <= 4000) {
+        this.speedX = +10;
+        this.otherDirection = true;   // SPIEGELN
+      }
+
+      // RECHTS ► LINKS
+      if (this.x >= 4600) {
+        this.speedX = -10;
+        this.otherDirection = false;  // NORMAL
+      }
+    }, 60);
   }
+
+
 }
