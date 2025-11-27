@@ -121,15 +121,22 @@ class Bodyguard extends MovableObject {
 
       // LINKS ► RECHTS
       if (this.x <= 4000) {
-        this.speedX = +10;
-        this.otherDirection = true;   // SPIEGELN
+        this.speedX = 0;            // kurz stehen bleiben
+        setTimeout(() => {
+          this.otherDirection = true;
+          this.speedX = +10;        // dann erst loslaufen
+        }, 200); // 200ms Pause
       }
 
       // RECHTS ► LINKS
-      if (this.x >= 4600) {
-        this.speedX = -10;
-        this.otherDirection = false;  // NORMAL
+      if (this.x >= 4570) {
+        this.speedX = 0;
+        setTimeout(() => {
+          this.otherDirection = false;
+          this.speedX = -10;
+        }, 200);
       }
+
     }, 60);
   }
 
