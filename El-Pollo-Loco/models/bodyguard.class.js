@@ -226,52 +226,54 @@ class Bodyguard extends MovableObject {
     if (this.isDead) return;
     this.isDead = true;
 
-    // ❗ Sofort alle Bewegungs-Intervalle stoppen
-    if (this.attackInterval) {
-      clearInterval(this.attackInterval);
-      this.attackInterval = null;
+    // ❗ Alle Bewegungs-Intervalle stoppen
+    if (this.attackInterval) clearInterval(this.attackInterval);
+    if (this.jumpInterval) clearInterval(this.jumpInterval);
+    this.speedX = 0; // stehen bleiben
+
+    // 🔊 Sound erst NACH 200ms abspielen
+    if (!this.dieSound) {
+      this.dieSound = new Audio('audio/bodyguard-die.mp3');
+      this.dieSound.volume = 0.5;
     }
-    if (this.jumpInterval) {
-      clearInterval(this.jumpInterval);
-      this.jumpInterval = null;
-    }
-    this.speedX = 0;
+    setTimeout(() => {
+      this.dieSound.currentTime = 0;
+      this.dieSound.play();
+    }, 200);  // kurze Verzögerung für besseren Effekt
 
-    let frame = 0;
-    const FRAME_DELAY = 300; // etwas langsamer für den Tod
-
-    const deathInterval = setInterval(() => {
-      if (this.isPaused || (this.world && this.world.isPaused)) return;
-
-      if (frame < this.IMAGES_DEAD.length) {
-        this.playAnimation(this.IMAGES_DEAD);
-        frame++;
-      } else {
-        clearInterval(deathInterval);
-        this.startFallingWhenDead();  // Jetzt runterfallen lassen
-      }
-    }, FRAME_DELAY);
+    // 👉 Sofort den Fall starten (ohne extra Animation vorher!)
+    this.startFallingWhenDead();
   }
+
 
 
   startFallingWhenDead() {
     if (this.fallInterval) return;
+
     let fallSpeed = 0;
 
+    // IMAGES_DEAD Endlosschleife während Fall
+    this.deathAnimInterval = setInterval(() => {
+      this.playAnimation(this.IMAGES_DEAD);
+    }, 200);  // du kannst hier z.B. 300 (langsamer) oder 100 (schneller) probieren
+
+    // GRAVITY / FALL
     this.fallInterval = setInterval(() => {
       if (this.isPaused || (this.world && this.world.isPaused)) return;
 
-      if (this.isDead) {
-        fallSpeed += 0.5;
-        this.y += fallSpeed;
+      fallSpeed += 0.5;
+      this.y += fallSpeed;
 
-        if (this.y > 600) {
-          clearInterval(this.fallInterval);
-          this.removeFromWorld();
-        }
+      // Wenn aus dem Bild verschwunden → stoppen & entfernen
+      if (this.y > 600) {
+        clearInterval(this.fallInterval);
+        clearInterval(this.deathAnimInterval);
+        this.removeFromWorld();
       }
-    }, 1000 / 30);
+    }, 1000 / 30); // 30 FPS
   }
+
+
 
 
   removeFromWorld() {
