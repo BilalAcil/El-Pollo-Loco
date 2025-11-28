@@ -164,8 +164,6 @@ class World {
         else if (enemy instanceof Bodyguard) {
           if (this.character.isColliding(enemy)) {
 
-            console.log("🛑 Kollision mit Bodyguard entdeckt!", enemy.x, enemy.y);
-
             const characterBottom = this.character.y + this.character.height;
             const enemyTop = enemy.y;
             const enemyMiddle = enemy.y + enemy.height / 2;
@@ -177,16 +175,21 @@ class World {
               characterBottom > enemyTop - 15;
 
             if (hitFromAbove && !enemy.isDead) {
-              enemy.hit?.();          // Bodyguard verliert Energie / stirbt
-              this.character.speedY = 20; // Rückstoß
+              console.log("💥 Bodyguard von oben getroffen!");
+              enemy.hit();                      // <-- jetzt existiert 'hit()'
+              this.character.speedY = 20;      // Rückstoß
               this.character.speedX = -15;
+              return;                          // WICHTIG → damit seitliche Kollision NICHT auch passiert!
             }
-            else if (!enemy.isDead) {
-              this.character.hit();      // Pepe bekommt Schaden
+
+            // ❌ seitlicher Treffer → Pepe bekommt Schaden
+            if (!enemy.isDead) {
+              this.character.hit();
               this.statusBar.setPercentage(this.character.energy);
             }
           }
         }
+
 
         // 🟨 FALL 3: andere Gegner (Chicken usw.)
         else {
