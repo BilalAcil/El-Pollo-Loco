@@ -2,10 +2,11 @@ class Bodyguard extends MovableObject {
   height = 180;
   width = 160;
   y = 150;
-  energy = 100;   // ★ NEU: Bodyguard kann sterben (z.B. nach 1 Treffer)
+  energy = 100;
   isDead = false;
   isJumping = false;
   jumpInterval = null;
+  attackInterval = null;
 
 
   // 🔊 Sounds
@@ -38,6 +39,12 @@ class Bodyguard extends MovableObject {
     'img/4_enemie_boss_chicken/4_hurt/G23.png'
   ];
 
+  IMAGES_DEAD = [
+    'img/4_enemie_boss_chicken/5_dead/G24.png',
+    'img/4_enemie_boss_chicken/5_dead/G25.png',
+    'img/4_enemie_boss_chicken/5_dead/G26.png'
+  ];
+
 
   constructor() {
     super();
@@ -52,15 +59,13 @@ class Bodyguard extends MovableObject {
     this.loadImages(this.IMAGES_LAND);
     this.loadImages(this.IMAGES_WALK);
     this.loadImages(this.IMAGES_HURT);
+    this.loadImages(this.IMAGES_DEAD);
 
     // 🔈 Hurt-Sound RICHTIG definieren!
-    this.hurtSound = new Audio('audio/bodyguard-1.mp3');
+    this.hurtSound = new Audio('audio/bodyguard-hurt.mp3');
     this.hurtSound.volume = 0.6;
     this.hurtSound.load();
   }
-
-
-  jumpInterval = null; // GANZ OBEN in der Klasse ergänzen!
 
 
   jumpToEndboss() {
@@ -174,34 +179,78 @@ class Bodyguard extends MovableObject {
   hit() {
     if (this.isDead) return;
 
-    // SOUND ABspielen
+    // ✅ Sofort stehen bleiben & Angriffs-Intervall stoppen
+    if (this.attackInterval) {
+      clearInterval(this.attackInterval);
+      this.attackInterval = null;
+    }
+    this.speedX = 0;
+
+    // SOUND abspielen
     this.hurtSound.currentTime = 0;
     this.hurtSound.play().catch(e => console.warn('Soundfehler:', e));
 
-    // Animation starten
-    this.playAnimation(this.IMAGES_HURT);
-
+    // SCHADEN zufügen
     this.energy -= 25;  // 4 Treffer = Tod
 
+    // Wenn tot → direkt Sterbe-Logik
     if (this.energy <= 0) {
       this.die();
-    } else {
-      // Nach 400ms weiterlaufen
-      setTimeout(() => {
-        this.startAttackLoop();  // weiterlaufen
-      }, 400);
+      return;
     }
+
+    // 🔁 Hurt-Animation 2× abspielen – LANGSAM & BLOCKIEREND
+    const FRAMES_PER_LOOP = this.IMAGES_HURT.length; // z.B. 3 Bilder
+    const LOOPS = 2;                                  // 2x abspielen
+    const TOTAL_FRAMES = FRAMES_PER_LOOP * LOOPS;     // z.B. 6 Frames
+    const FRAME_DELAY = 100;                          // 100 ms pro Frame
+
+    let frameCounter = 0;
+
+    const hurtInterval = setInterval(() => {
+      this.playAnimation(this.IMAGES_HURT);
+      frameCounter++;
+
+      if (frameCounter >= TOTAL_FRAMES) {
+        clearInterval(hurtInterval);
+
+        // 👉 Erst jetzt wieder laufen lassen
+        this.startAttackLoop();
+      }
+    }, FRAME_DELAY);
   }
 
 
-  die() {
-    this.isDead = true;
-    clearInterval(this.attackInterval);
 
-    this.playAnimation(this.IMAGES_HURT);  // Letzter Schlag
-    setTimeout(() => {
-      this.startFallingWhenDead();
-    }, 500);
+  die() {
+    if (this.isDead) return;
+    this.isDead = true;
+
+    // ❗ Sofort alle Bewegungs-Intervalle stoppen
+    if (this.attackInterval) {
+      clearInterval(this.attackInterval);
+      this.attackInterval = null;
+    }
+    if (this.jumpInterval) {
+      clearInterval(this.jumpInterval);
+      this.jumpInterval = null;
+    }
+    this.speedX = 0;
+
+    let frame = 0;
+    const FRAME_DELAY = 300; // etwas langsamer für den Tod
+
+    const deathInterval = setInterval(() => {
+      if (this.isPaused || (this.world && this.world.isPaused)) return;
+
+      if (frame < this.IMAGES_DEAD.length) {
+        this.playAnimation(this.IMAGES_DEAD);
+        frame++;
+      } else {
+        clearInterval(deathInterval);
+        this.startFallingWhenDead();  // Jetzt runterfallen lassen
+      }
+    }, FRAME_DELAY);
   }
 
 
