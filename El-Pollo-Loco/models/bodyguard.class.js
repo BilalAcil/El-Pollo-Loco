@@ -5,6 +5,8 @@ class Bodyguard extends MovableObject {
   energy = 100;   // ★ NEU: Bodyguard kann sterben (z.B. nach 1 Treffer)
   isDead = false;
   isJumping = false;
+  jumpInterval = null;
+
 
   // 🔊 Sounds
   bodyguardSound = new Audio('audio/bodyguard-sound.mp3');
@@ -30,6 +32,13 @@ class Bodyguard extends MovableObject {
     'img/4_enemie_boss_chicken/1_walk/G4.png'
   ];
 
+  IMAGES_HURT = [
+    'img/4_enemie_boss_chicken/4_hurt/G21.png',
+    'img/4_enemie_boss_chicken/4_hurt/G22.png',
+    'img/4_enemie_boss_chicken/4_hurt/G23.png'
+  ];
+
+
   constructor() {
     super();
     this.x = 4700;
@@ -41,11 +50,17 @@ class Bodyguard extends MovableObject {
     this.loadImages(this.IMAGES_JUMP_UP);
     this.loadImages(this.IMAGES_JUMP_HOVER);
     this.loadImages(this.IMAGES_LAND);
-
-    // 🟢 NEU: WALK-Bilder vorladen!
     this.loadImages(this.IMAGES_WALK);
+    this.loadImages(this.IMAGES_HURT);
+
+    // 🔈 Hurt-Sound RICHTIG definieren!
+    this.hurtSound = new Audio('audio/bodyguard-1.mp3');
+    this.hurtSound.volume = 0.6;
+    this.hurtSound.load();
   }
 
+
+  jumpInterval = null; // GANZ OBEN in der Klasse ergänzen!
 
 
   jumpToEndboss() {
@@ -53,24 +68,23 @@ class Bodyguard extends MovableObject {
     this.isJumping = true;
 
     // 🔊 Sound: Bodyguard springt runter
-    this.bodyguardSound.currentTime = 0;   // optional: immer von vorne
+    this.bodyguardSound.currentTime = 0;
     this.bodyguardSound.play();
 
     // Sprungkraft
-    this.speedY = 32;       // vertikal
-    this.speedX = -12;      // horizontal
+    this.speedY = 32;
+    this.speedX = -12;
     this.playAnimation(this.IMAGES_JUMP_START);
 
-    const interval = setInterval(() => {
+    // ❗ Intervall speichern (wichtig!)
+    this.jumpInterval = setInterval(() => {
 
-      // SPRUNGPHASEN
       if (this.speedY > 0) {
-        this.playAnimation(this.IMAGES_JUMP_UP);     // hoch
+        this.playAnimation(this.IMAGES_JUMP_UP);
       } else {
-        this.playAnimation(this.IMAGES_JUMP_HOVER);  // oben schweben
+        this.playAnimation(this.IMAGES_JUMP_HOVER);
       }
 
-      // Flug — leichte Reibung (damit er nicht unendlich fliegt)
       this.x += this.speedX;
       this.speedX *= 0.99;
 
@@ -80,22 +94,23 @@ class Bodyguard extends MovableObject {
         this.speedY = 0;
         this.speedX = 0;
 
-        // 🔊 Sound: Aufprall-Boom
         this.boomSound.currentTime = 0;
         this.boomSound.play();
 
-        // 👉 ALLE Objekte kurz hüpfen lassen
         if (this.world) {
-          this.world.jumpFromShock();   // 🚀 SCHOCK-EFFEKT HIER
+          this.world.jumpFromShock();
         }
+
+        // ⛔ SPRUNG-INTERVALL KORREKT BEENDEN!
+        clearInterval(this.jumpInterval);
+        this.jumpInterval = null;
 
         this.landAnimation();
         this.isJumping = false;
-        clearInterval(interval);
       }
+
     }, 40);
   }
-
 
   landAnimation() {
     this.playAnimation(this.IMAGES_LAND);
@@ -114,23 +129,26 @@ class Bodyguard extends MovableObject {
 
 
   startAttackLoop() {
+    // ❗ Sicherstellen, dass nur EIN Intervall aktiv ist:
+    if (this.attackInterval) {
+      clearInterval(this.attackInterval);
+    }
+
     this.speedX = -10;
-    this.otherDirection = false; // Blick nach links
+    this.otherDirection = false;
 
     this.attackInterval = setInterval(() => {
       this.playAnimation(this.IMAGES_WALK);
       this.x += this.speedX;
 
-      // LINKS ► RECHTS
       if (this.x <= 4000) {
-        this.speedX = 0;            // kurz stehen bleiben
+        this.speedX = 0;
         setTimeout(() => {
           this.otherDirection = true;
-          this.speedX = +10;        // dann erst loslaufen
-        }, 200); // 200ms Pause
+          this.speedX = +10;
+        }, 200);
       }
 
-      // RECHTS ► LINKS
       if (this.x >= 4570) {
         this.speedX = 0;
         setTimeout(() => {
@@ -138,9 +156,9 @@ class Bodyguard extends MovableObject {
           this.speedX = -10;
         }, 200);
       }
-
     }, 60);
   }
+
 
   get collisionBox() {
     return {
@@ -155,19 +173,37 @@ class Bodyguard extends MovableObject {
 
   hit() {
     if (this.isDead) return;
-    this.energy -= 25; // oder 100 direkt killen
+
+    // SOUND ABspielen
+    this.hurtSound.currentTime = 0;
+    this.hurtSound.play().catch(e => console.warn('Soundfehler:', e));
+
+    // Animation starten
+    this.playAnimation(this.IMAGES_HURT);
+
+    this.energy -= 25;  // 4 Treffer = Tod
 
     if (this.energy <= 0) {
       this.die();
+    } else {
+      // Nach 400ms weiterlaufen
+      setTimeout(() => {
+        this.startAttackLoop();  // weiterlaufen
+      }, 400);
     }
   }
 
+
   die() {
     this.isDead = true;
-    clearInterval(this.attackInterval);   // stoppe Bewegung!
-    this.playAnimation(this.IMAGES_LAND); // kleine Todesanimation
-    this.startFallingWhenDead();          // WIE ENDBOSS!
+    clearInterval(this.attackInterval);
+
+    this.playAnimation(this.IMAGES_HURT);  // Letzter Schlag
+    setTimeout(() => {
+      this.startFallingWhenDead();
+    }, 500);
   }
+
 
   startFallingWhenDead() {
     if (this.fallInterval) return;

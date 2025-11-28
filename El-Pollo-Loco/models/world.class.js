@@ -108,8 +108,6 @@ class World {
   }
 
 
-
-
   checkCollisions() {
     this.collisionInterval = setInterval(() => {
       if (this.isPaused) return; // während Pause nichts prüfen
