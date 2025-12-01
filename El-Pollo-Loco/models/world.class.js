@@ -159,9 +159,9 @@ class World {
           }
         }
 
-        // 🟦 FALL 2: BODYGUARD – genauso behandeln wie Endboss!
+        // 🟦 FALL 2: BODYGUARD
         else if (enemy instanceof Bodyguard) {
-          if (this.character.isColliding(enemy)) {
+          if (this.character.isColliding(enemy) && !enemy.isDead) {
 
             const characterBottom = this.character.y + this.character.height;
             const enemyTop = enemy.y;
@@ -173,19 +173,33 @@ class World {
               characterBottom < enemyMiddle &&
               characterBottom > enemyTop - 15;
 
-            if (hitFromAbove && !enemy.isDead) {
-              console.log("💥 Bodyguard von oben getroffen!");
-              enemy.hit();                      // <-- jetzt existiert 'hit()'
-              this.character.speedY = 20;      // Rückstoß
+            // 🟢 VON OBEN → Bodyguard bekommt Schaden
+            if (hitFromAbove) {
+              enemy.hit();
+              this.character.speedY = 20;
               this.character.speedX = -15;
-              return;                          // WICHTIG → damit seitliche Kollision NICHT auch passiert!
+              return;  // ❗ Verhindert Doppel-Kollision
             }
 
-            // ❌ seitlicher Treffer → Pepe bekommt Schaden
-            if (!enemy.isDead) {
-              this.character.hit();
+            // 🔴 SEITLICH → Spieler bekommt Schaden MIT COOLDOWN
+            const now = Date.now();
+            if (!this.lastBodyguardHit || now - this.lastBodyguardHit > 1000) {
+
+              this.lastBodyguardHit = now; // COOLDOWN aktivieren!
+
+              this.character.hit(); // -=20%
               this.statusBar.setPercentage(this.character.energy);
+
+              if (this.character.energy <= 0) {
+                // Spieler stirbt nur EINMAL – nicht mehrfach!
+                this.character.isDead = true;
+                this.statusBar.setPercentage(0);
+                this.character.playDeathAnimation();
+                this.character.startFallingWhenDead();
+                this.endGame(false);
+              }
             }
+
           }
         }
 
@@ -310,7 +324,7 @@ class World {
       }
 
 
-      // 💥 Salsa-Flaschen treffen Gegner (Endboss, Chicken, Küken)
+      // 💥 Salsa-Flaschen treffen Gegner (Endboss, Bodyguard, Chicken, Küken)
       this.throwableObjects.forEach((salsa, index) => {
         this.level.enemies.forEach((enemy) => {
           if (
@@ -330,6 +344,12 @@ class World {
             salsa.splashAnimation(() => {
               this.throwableObjects.splice(index, 1);
             });
+
+            // 🆕 BODYGUARD-SCHADEN
+            if (enemy instanceof Bodyguard) {
+              enemy.hit();  // Dabei wird das Leben automatisch abgezogen!
+              return;
+            }
 
             // 🧩 Je nach Gegnertyp unterschiedlich reagieren
             if (enemy instanceof Endboss) {
