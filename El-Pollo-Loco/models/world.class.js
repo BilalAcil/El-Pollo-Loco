@@ -9,6 +9,7 @@ class World {
   statusBar = new StatusBar(); // Assuming StatusBar is defined elsewhere
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
+  bodyguardStatus = null; // Wird erstellt, wenn Bodyguard erscheint
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
   corncob = new Corncob();
   chickenNest = new ChickenNest();
@@ -565,6 +566,10 @@ class World {
     this.addToMap(this.chickenNest);
     if (this.maracas) {
       this.addToMap(this.maracas);
+    }
+
+    if (this.bodyguardStatus) {
+      this.addToMap(this.bodyguardStatus);
     }
 
     if (this.corncob) {

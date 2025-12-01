@@ -93,7 +93,7 @@ class Bodyguard extends MovableObject {
       this.x += this.speedX;
       this.speedX *= 0.99;
 
-      // --- LANDUNG ---
+      // --- LANDUNG --- 
       if (this.speedY <= 0 && !this.isAboveGround()) {
         this.y = 260;
         this.speedY = 0;
@@ -104,15 +104,21 @@ class Bodyguard extends MovableObject {
 
         if (this.world) {
           this.world.jumpFromShock();
+
+          // ⬇️ Hier Statusbar ERST jetzt erstellen!
+          if (!this.world.bodyguardStatus) {
+            this.world.bodyguardStatus = new BodyguardStatusBar(this.world);
+            this.world.addToMap(this.world.bodyguardStatus);  // ✨ WICHTIG!
+          }
         }
 
-        // ⛔ SPRUNG-INTERVALL KORREKT BEENDEN!
         clearInterval(this.jumpInterval);
         this.jumpInterval = null;
 
         this.landAnimation();
         this.isJumping = false;
       }
+
 
     }, 40);
   }
@@ -192,6 +198,12 @@ class Bodyguard extends MovableObject {
 
     // SCHADEN zufügen
     this.energy -= 25;  // 4 Treffer = Tod
+
+
+    // 🔄 Status-Bar aktualisieren
+    if (this.world && this.world.bodyguardStatus) {
+      this.world.bodyguardStatus.setPercentage(this.energy);
+    }
 
     // Wenn tot → direkt Sterbe-Logik
     if (this.energy <= 0) {
@@ -285,6 +297,5 @@ class Bodyguard extends MovableObject {
       }
     }
   }
-
 
 }
