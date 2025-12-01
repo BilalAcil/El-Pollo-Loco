@@ -595,49 +595,44 @@ class World {
     console.log("⏸️ Welt wird eingefroren...");
 
     // 🟦 Clouds
-    this.level.clouds.forEach(c => {
-      if (c.moveInterval) clearInterval(c.moveInterval);
-    });
+    this.level.clouds.forEach(c => clearInterval(c.moveInterval));
 
-    // 🟥 Gegner (Chicken, ChickenSmall, Endboss)
+    // 🟥 Gegner
     this.level.enemies.forEach(e => {
       if (e.moveInterval) clearInterval(e.moveInterval);
       if (e.animationInterval) clearInterval(e.animationInterval);
       if (e.fallInterval) clearInterval(e.fallInterval);
     });
 
-    // 🟨 Kollisionsprüfungen
-    if (this.collisionInterval) {
-      clearInterval(this.collisionInterval);
-      this.collisionInterval = null;
+    // 🧍 Bodyguard pausieren
+    if (this.bodyguard) {
+      this.bodyguard.pause();
     }
 
-    // 🟩 Tasteneingaben deaktivieren (optional, verhindert Kamera-Bewegung)
-    this.keyboard.RIGHT = false;
-    this.keyboard.LEFT = false;
-    this.keyboard.UP = false;
-    this.keyboard.DOWN = false;
-    this.keyboard.SPACE = false;
-    this.keyboard.D = false;
+    // 🟥 Kollisionen
+    clearInterval(this.collisionInterval);
 
-    // 🧊 Flag
+    // 🟩 Keyboard deaktivieren
+    Object.keys(this.keyboard).forEach(key => this.keyboard[key] = false);
+
     this.isPaused = true;
   }
 
-
-
-  /**
-   * Setzt die Bewegungen wieder fort (optional, für Restart).
-   */
   resumeAllMovements() {
     console.log("▶️ Welt läuft wieder...");
     this.isPaused = false;
 
-    // Wolken, Gegner etc. starten ihre animate()-Methoden erneut
     this.level.clouds.forEach(c => c.animate());
     this.level.enemies.forEach(e => e.animate && e.animate());
-    this.checkCollisions(); // reaktiviert die Kollisionen
+
+    // 🧍 Bodyguard wieder aktivieren
+    if (this.bodyguard) {
+      this.bodyguard.resume();
+    }
+
+    this.checkCollisions();
   }
+
 
   /**
    * Stoppt das Spiel komplett (z. B. bei Game Over).

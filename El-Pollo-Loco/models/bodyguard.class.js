@@ -7,6 +7,9 @@ class Bodyguard extends MovableObject {
   isJumping = false;
   jumpInterval = null;
   attackInterval = null;
+  lastSpeedX = 0;
+  lastDirection = false;  // false = rechts schauen / true = links schauen
+
 
 
   // 🔊 Sounds
@@ -51,6 +54,7 @@ class Bodyguard extends MovableObject {
     this.x = 4700;
     this.loadImage(this.IMAGE);
     this.applyGravity();
+    this.hasJumped = false;
 
     // Bilder vorladen
     this.loadImages(this.IMAGES_JUMP_START);
@@ -69,8 +73,9 @@ class Bodyguard extends MovableObject {
 
 
   jumpToEndboss() {
-    if (this.isJumping) return;
+    if (this.isJumping || this.hasJumped) return;  // 🛑 DOPPEL-Schutz
     this.isJumping = true;
+    this.hasJumped = true;    // Sobald gestartet → Flag setzen
 
     // 🔊 Sound: Bodyguard springt runter
     this.bodyguardSound.currentTime = 0;
@@ -140,18 +145,29 @@ class Bodyguard extends MovableObject {
 
 
   startAttackLoop() {
-    // ❗ Sicherstellen, dass nur EIN Intervall aktiv ist:
-    if (this.attackInterval) {
-      clearInterval(this.attackInterval);
+    if (!this.hasJumped) return;                  // ❗ Nur nach dem Sprung aktiv!
+
+    if (this.attackInterval) clearInterval(this.attackInterval);
+
+    // 👉 Falls Werte aus Pause/HIT existieren → diese verwenden!
+    if (this.lastSpeedX !== 0) {
+      this.speedX = this.lastSpeedX;
+    } else if (this.speedX === 0) {
+      this.speedX = -10;                          // Standard: nach links starten
     }
 
-    this.speedX = -10;
-    this.otherDirection = false;
+    // 👉 Blickrichtung nicht überschreiben!
+    if (this.lastDirection !== undefined) {
+      this.otherDirection = this.lastDirection;
+    } else if (this.otherDirection === undefined) {
+      this.otherDirection = false;                // Standard-Richtung
+    }
 
     this.attackInterval = setInterval(() => {
       this.playAnimation(this.IMAGES_WALK);
       this.x += this.speedX;
 
+      // 🔁 Normale Laufgrenzen
       if (this.x <= 4000) {
         this.speedX = 0;
         setTimeout(() => {
@@ -167,8 +183,14 @@ class Bodyguard extends MovableObject {
           this.speedX = -10;
         }, 200);
       }
+
+      // 💾 Aktuelle Werte merken (wichtig für Pause/HIT)
+      this.lastSpeedX = this.speedX;
+      this.lastDirection = this.otherDirection;
+
     }, 60);
   }
+
 
 
   get collisionBox() {
@@ -185,53 +207,70 @@ class Bodyguard extends MovableObject {
   hit() {
     if (this.isDead) return;
 
-    // ✅ Sofort stehen bleiben & Angriffs-Intervall stoppen
+    // STOPPEN
     if (this.attackInterval) {
       clearInterval(this.attackInterval);
       this.attackInterval = null;
     }
+
+    // 💾 Letzte Richtung vorm Hit speichern
+    this.lastDirection = this.otherDirection;
+    this.lastSpeedX = this.speedX;
     this.speedX = 0;
 
-    // SOUND abspielen
+    // SOUND
     this.hurtSound.currentTime = 0;
     this.hurtSound.play().catch(e => console.warn('Soundfehler:', e));
 
-    // SCHADEN zufügen
-    this.energy -= 25;  // 4 Treffer = Tod
+    // SCHADEN
+    this.energy -= 25;
 
-
-    // 🔄 Status-Bar aktualisieren
+    // 🔁 STATUS LEISTE UPDATEN
     if (this.world && this.world.bodyguardStatus) {
       this.world.bodyguardStatus.setPercentage(this.energy);
     }
 
-    // Wenn tot → direkt Sterbe-Logik
+    // ❗❗❗ HIER FÜGEN WIR DEN FALLBACK EIN ❗❗❗
+    if (this.world && this.world.character) {
+      const player = this.world.character;
+
+      // 1️⃣ Spieler steht rechts → Bodyguard soll NICHT zurückweichen:
+      if (player.x > this.x) {
+        this.otherDirection = false;  // Rechts schauen
+        this.speedX = 5;              // leicht vorwärts gehen
+      }
+
+      // 2️⃣ Spieler steht links → Bodyguard soll auch nicht zurückweichen:
+      else {
+        this.otherDirection = true;   // Links schauen
+        this.speedX = -5;             // leicht vorwärts gehen
+      }
+    }
+    // ❗ ENDE DES FALLBACKS
+
+
+    // WENN TOT → STERBEN
     if (this.energy <= 0) {
       this.die();
       return;
     }
 
-    // 🔁 Hurt-Animation 2× abspielen – LANGSAM & BLOCKIEREND
-    const FRAMES_PER_LOOP = this.IMAGES_HURT.length; // z.B. 3 Bilder
-    const LOOPS = 2;                                  // 2x abspielen
-    const TOTAL_FRAMES = FRAMES_PER_LOOP * LOOPS;     // z.B. 6 Frames
-    const FRAME_DELAY = 100;                          // 100 ms pro Frame
+    // HURT ANIMATION (bleibt gleich)
+    const FRAMES_PER_LOOP = this.IMAGES_HURT.length;
+    const LOOPS = 2;
+    const TOTAL_FRAMES = FRAMES_PER_LOOP * LOOPS;
+    const FRAME_DELAY = 100;
 
     let frameCounter = 0;
-
     const hurtInterval = setInterval(() => {
       this.playAnimation(this.IMAGES_HURT);
       frameCounter++;
-
       if (frameCounter >= TOTAL_FRAMES) {
         clearInterval(hurtInterval);
-
-        // 👉 Erst jetzt wieder laufen lassen
         this.startAttackLoop();
       }
     }, FRAME_DELAY);
   }
-
 
 
   die() {
@@ -286,8 +325,6 @@ class Bodyguard extends MovableObject {
   }
 
 
-
-
   removeFromWorld() {
     if (this.world) {
       const i = this.world.level.enemies.indexOf(this);
@@ -297,5 +334,22 @@ class Bodyguard extends MovableObject {
       }
     }
   }
+
+  pause() {
+    // Alle Bewegungs-Intervalle pausieren
+    if (this.attackInterval) clearInterval(this.attackInterval);
+    if (this.jumpInterval) clearInterval(this.jumpInterval);
+    if (this.fallInterval) clearInterval(this.fallInterval);
+  }
+
+  resume() {
+    if (!this.isDead && !this.isJumping) {
+      this.speedX = this.lastSpeedX;        // Bewegung wiederherstellen
+      this.otherDirection = this.lastDirection;
+      this.startAttackLoop();
+    }
+  }
+
+
 
 }

@@ -206,9 +206,11 @@ class Character extends MovableObject {
         }
 
         // 📌 BODYGUARD herunterspringen lassen
-        if (this.world.bodyguard) {
-          this.world.bodyguard.jumpToEndboss(); // Neue Methode (unten)
+        if (this.world.bodyguard && !this.world.bodyguard.hasJumped) {
+          this.world.bodyguard.jumpToEndboss();
+          this.world.bodyguard.hasJumped = true;   // verhindert mehrfachen Aufruf
         }
+
       }
 
 
