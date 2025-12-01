@@ -134,13 +134,19 @@ class Bodyguard extends MovableObject {
     setTimeout(() => {
       this.loadImage('img/4_enemie_boss_chicken/3_attack/G13.png');
 
-      // Nach 1 Sekunde Endlosschleife starten
+      // ❗ Spieler wieder freigeben
+      if (this.world && this.world.character) {
+        this.world.character.freezeForBodyguard = false;
+      }
+
+      // Nach 1 Sekunde Angriff starten
       setTimeout(() => {
         this.startAttackLoop();
       }, 1000);
 
     }, this.IMAGES_LAND.length * 100);
   }
+
 
 
 

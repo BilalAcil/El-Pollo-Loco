@@ -167,6 +167,10 @@ class Character extends MovableObject {
       // 🧩 Bewegung deaktivieren, wenn Welt pausiert ist
       if (this.world.isPaused) return;
 
+      // 🛑 Spieler eingefroren?
+      if (this.freezeForBodyguard)
+        return;
+
       // Bewegung
       if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
         this.moveRight();
@@ -205,6 +209,9 @@ class Character extends MovableObject {
           this.world.countdown.playEndBossMusic();
         }
 
+        // Spieler anhalten
+        this.freezeForBodyguard = true;
+
         // 📌 BODYGUARD herunterspringen lassen
         if (this.world.bodyguard && !this.world.bodyguard.hasJumped) {
           this.world.bodyguard.jumpToEndboss();
@@ -231,13 +238,14 @@ class Character extends MovableObject {
 
     // Animation
     setInterval(() => {
-      // Wenn das Spiel/der Charakter gerade pausiert ist,
-      // wird die komplette Animationslogik übersprungen
-      if (this.isPaused) return;  // ⏸ Animation einfrieren
-
-      // Wenn gerade ein Wurf ausgeführt wird (z.B. Flasche werfen),
-      // soll die normale Animationslogik nicht dazwischenfunken
+      if (this.isPaused) return;
       if (this.isThrowing) return;
+
+      // 🛑 Wenn Bodyguard landet → Pepe zeigt EIN Standbild
+      if (this.freezeForBodyguard) {
+        this.loadImage('img/2_character_pepe/3_jump/J-31.png');
+        return; // keine Animation abspielen
+      }
 
       // 👉 Berechnung, wie lange der Spieler "effektiv" schon inaktiv ist
       // (also seit der letzten Bewegung)
