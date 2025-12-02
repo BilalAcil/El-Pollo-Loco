@@ -33,7 +33,7 @@ class DrawableObject {
     ) {
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "red";
+      ctx.strokeStyle = "transparent";
 
       // 🔥 Nur beim Bodyguard Rahmen etwas nach unten verschieben
       let offsetY = this instanceof Bodyguard ? 30 : 0;
