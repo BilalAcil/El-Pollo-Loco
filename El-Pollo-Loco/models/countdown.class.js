@@ -10,7 +10,7 @@ class Countdown extends DrawableObject {
     this.x = 320;
     this.y = 22;
 
-    this.countdownTime = 61; // Sekunden
+    this.countdownTime = 120; // Sekunden
     this.countdownInterval = null;
     this.isStarted = false;
     this.isPaused = false;
