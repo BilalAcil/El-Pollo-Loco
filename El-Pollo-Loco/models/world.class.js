@@ -176,10 +176,24 @@ class World {
             // 🟢 VON OBEN → Bodyguard bekommt Schaden
             if (hitFromAbove) {
               enemy.hit();
-              this.character.speedY = 20;
-              this.character.speedX = -15;
-              return;  // ❗ Verhindert Doppel-Kollision
+
+              // 🔄 Zufälliger Rückstoß (links/rechts)
+              const randomDirection = Math.random() < 0.5 ? -1 : 1;
+
+              // 🟢 Sanfter Rückstoß als beim Endboss
+              this.character.speedY = 18;
+              this.character.speedX = 10 * randomDirection;
+              this.character.knockbackActive = true;
+
+              // 🚧 X-Grenzen absichern (4000–4570)
+              setTimeout(() => {
+                if (this.character.x < 4000) this.character.x = 4000;
+                if (this.character.x > 4570) this.character.x = 4570;
+              }, 20);
+
+              return; // verhindert Mehrfachkollision
             }
+
 
             // 🔴 SEITLICH → Spieler bekommt Schaden MIT COOLDOWN
             const now = Date.now();

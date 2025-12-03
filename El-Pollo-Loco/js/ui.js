@@ -14,6 +14,7 @@ function init() {
  * Startet das Spiel, wenn "Spielen" gedrückt wird
  */
 function startGame() {
+  canvas = document.getElementById('canvas');
   document.getElementById('game-name').style.display = 'block';
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('canvas').style.display = 'block';
@@ -115,6 +116,8 @@ function showEndScreen(win) {
  */
 function restartGame() {
   console.clear();
+
+  canvas = document.getElementById('canvas');  // 🔥 Garantiert, dass Canvas-Referenz stimmt
 
   // 🛠 stats-box neu erstellen!
   const oldStatsBox = document.getElementById('stats-box');

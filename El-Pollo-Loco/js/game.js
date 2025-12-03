@@ -26,15 +26,11 @@ function startGameLogic() {
   console.log("🎮 Spiel gestartet!");
 
   // 🖱️ Klick auf Canvas = Pause/Play Toggle
-  canvas.addEventListener("click", () => {
+  canvas.onclick = () => {
     if (!world) return;
-
-    if (world.isPaused) {
-      world.resumeGame();   // ▶️ Spiel fortsetzen
-    } else {
-      world.pauseGame();    // ⏸️ Spiel pausieren
-    }
-  });
+    if (world.isPaused) world.resumeGame();
+    else world.pauseGame();
+  };
 }
 
 /**
