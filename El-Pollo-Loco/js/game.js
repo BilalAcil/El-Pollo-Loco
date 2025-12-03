@@ -13,8 +13,6 @@ function init() {
     console.error("❌ Canvas nicht gefunden!");
     return;
   }
-
-  console.log("✅ Canvas gefunden:", canvas);
 }
 
 /**
@@ -23,7 +21,6 @@ function init() {
 function startGameLogic() {
   canvas = document.getElementById('canvas');
   world = new World(canvas, keyboard);
-  console.log("🎮 Spiel gestartet!");
 
   // 🖱️ Klick auf Canvas = Pause/Play Toggle
   canvas.onclick = () => {

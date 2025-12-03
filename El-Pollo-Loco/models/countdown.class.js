@@ -102,7 +102,6 @@ class Countdown extends DrawableObject {
   triggerOneMinuteWarning() {
     if (this.isBlinking) return; // falls bereits aktiv → nicht nochmal starten
 
-    console.log("⏰ Zeitwarnung aktiv!");
     this.isBlinking = true;
     this.slowClockSound.play().catch(e => console.warn(e));
 
@@ -168,7 +167,6 @@ class Countdown extends DrawableObject {
       if (this.endBossMusic && !this.endBossMusic.paused) this.endBossMusic.pause();
       if (this.slowClockSound && !this.slowClockSound.paused) this.slowClockSound.pause(); // ⬅️ HIER NEU!
 
-      console.log("🎵 Alle Musik pausiert (Position beibehalten).");
     } catch (e) {
       console.warn("Fehler beim Pausieren der Musik:", e);
     }
@@ -187,7 +185,6 @@ class Countdown extends DrawableObject {
           this.slowClockSound.play().catch(e => console.warn("slowClock Resume-Fehler:", e));
         }
       }
-      console.log("🎵 Musik fortgesetzt.");
     } catch (e) {
       console.warn("Fehler beim Fortsetzen der Musik:", e);
     }
@@ -200,7 +197,6 @@ class Countdown extends DrawableObject {
    */
   pauseCountdown() {
     this.isPaused = true;
-    console.log("⏸️ Countdown pausiert");
   }
 
   /**
@@ -211,7 +207,6 @@ class Countdown extends DrawableObject {
       this.startCountdown(); // falls noch nicht gestartet → starten
     }
     this.isPaused = false;
-    console.log("▶️ Countdown fortgesetzt");
   }
 
   /**

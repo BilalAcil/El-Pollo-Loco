@@ -78,7 +78,6 @@ class Endboss extends MovableObject {
       const index = this.world.level.enemies.indexOf(this);
       if (index > -1) {
         this.world.level.enemies.splice(index, 1);
-        console.log("🗑️ Endboss wurde entfernt!");
       }
     }
   }
@@ -87,20 +86,15 @@ class Endboss extends MovableObject {
     if (this.isDeadHandled) return;  // verhindert Doppelevents
     this.isDeadHandled = true;
 
-    console.log("💀 Endboss ist tot!");
-
     // 🛡️ Bodyguard ebenfalls töten
     if (this.world?.bodyguard && !this.world.bodyguard.isDead) {
-      console.log("🛡️ Bodyguard stirbt zusammen mit dem Endboss!");
       this.world.bodyguard.die();
     }
 
     // 🪇 Maracas erscheinen lassen
     if (!this.world.maracas) {
-      console.log("🎵 Maracas erscheinen gleich...");
       setTimeout(() => {
         this.world.maracas = new Maracas();
-        console.log("🪇 Maracas sind erschienen!");
       }, 800);
     }
   }

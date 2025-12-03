@@ -285,7 +285,6 @@ class Bodyguard extends MovableObject {
 
     // 🧹 STATUSBAR ENTFERNEN (WICHTIG!)
     if (this.world?.bodyguardStatus) {
-      console.log("🧹 Bodyguard-Statusbar entfernt!");
       this.world.bodyguardStatus = null;
     }
 
@@ -341,7 +340,6 @@ class Bodyguard extends MovableObject {
       const i = this.world.level.enemies.indexOf(this);
       if (i > -1) {
         this.world.level.enemies.splice(i, 1);
-        console.log("🗑️ Bodyguard wurde entfernt!");
       }
     }
   }

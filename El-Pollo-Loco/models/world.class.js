@@ -56,8 +56,6 @@ class World {
 
     // ▶️ Play-Symbol zeigen (damit sichtbar ist, dass man starten kann)
     this.showPlaySymbol();
-
-    console.log("🧊 Welt erstellt – startet pausiert.");
   }
 
 
@@ -147,7 +145,6 @@ class World {
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
-                console.log("💀 Endboss besiegt – startet Todesanimation");
 
                 if (enemy.onDeath) {
                   enemy.onDeath();
@@ -377,7 +374,6 @@ class World {
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
-                console.log("💀 Endboss besiegt – startet Todesanimation");
 
                 if (enemy.onDeath) {
                   enemy.onDeath();
@@ -626,8 +622,6 @@ class World {
  * (z. B. wenn Pepe stirbt).
  */
   pauseAllMovements() {
-    console.log("⏸️ Welt wird eingefroren...");
-
     // 🟦 Clouds
     this.level.clouds.forEach(c => clearInterval(c.moveInterval));
 
@@ -653,7 +647,6 @@ class World {
   }
 
   resumeAllMovements() {
-    console.log("▶️ Welt läuft wieder...");
     this.isPaused = false;
 
     this.level.clouds.forEach(c => c.animate());
@@ -673,7 +666,6 @@ class World {
    */
   stop() {
     this.pauseAllMovements();
-    console.log("🛑 Spiel gestoppt.");
   }
 
 
@@ -778,7 +770,6 @@ class World {
 
     // Pause-Symbol + Play-Symbol
     this.showPauseThenPlaySymbol();
-    console.log("⏸️ Spiel pausiert");
   }
 
   // 🧩 SPIEL FORTSETZEN
@@ -831,7 +822,6 @@ class World {
 
     // Play-Symbol ausblenden
     this.hidePlaySymbol();
-    console.log("▶️ Spiel fortgesetzt");
   }
 
 
@@ -970,7 +960,5 @@ class World {
         }
       }, 30);
     }
-
-    console.log('💥 Schock ausgelöst!');
   }
 }

@@ -138,7 +138,6 @@ function restartGame() {
 
 function nextLevel() {
   // document.getElementById('end-screen').classList.add('hidden');
-  console.log("🎸 Nächster Level wird geladen...");
 
   // Hier könntest du dein Level-2-Setup starten:
   // z.B. loadLevel2();
@@ -175,7 +174,6 @@ function returnToHome() {
  * Warten, bis Browser + Spiel intern vollständig geladen sind
  */
 window.addEventListener('load', async () => {
-  console.log("🌐 Browser vollständig geladen – warte auf interne Spielressourcen...");
 
   // interne Ressourcen prüfen
   await waitForGameAssets();
@@ -186,7 +184,6 @@ window.addEventListener('load', async () => {
     startBtn.removeAttribute('disabled');
     startBtn.textContent = '🎮 Spiel starten';
     startBtn.onclick = startGame;
-    console.log("✅ Alles geladen – Spielstart möglich!");
   }
 });
 

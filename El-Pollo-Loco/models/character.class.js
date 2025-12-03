@@ -535,7 +535,6 @@ class Character extends MovableObject {
       // Wenn Pepe existiert, entferne ihn aus dem Array
       if (index > -1) {
         this.world.level.enemies.splice(index, 1);
-        console.log("🗑️ Pepe wurde aus der Welt entfernt!");
       }
     }
   }
