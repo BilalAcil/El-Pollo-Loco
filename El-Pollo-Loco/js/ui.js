@@ -199,15 +199,21 @@ async function waitForGameAssets() {
 
   return new Promise(resolve => {
     const check = setInterval(() => {
+      const imagesLoaded = [...document.querySelectorAll('img')].every(img => img.complete);
+
       const assetsReady =
         typeof World !== 'undefined' &&
         typeof level1 !== 'undefined' &&
-        document.querySelectorAll('img').length > 0;
+        typeof Character !== 'undefined' &&
+        typeof StatusBar !== 'undefined' &&
+        typeof StatusBarCoin !== 'undefined' &&
+        typeof StatusBarSalsa !== 'undefined' &&
+        imagesLoaded;
 
       if (assetsReady || Date.now() - startTime > timeout) {
         clearInterval(check);
         resolve();
       }
-    }, 300);
+    }, 200);
   });
 }
