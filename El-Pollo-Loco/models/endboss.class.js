@@ -84,7 +84,19 @@ class Endboss extends MovableObject {
   }
 
   onDeath() {
-    if (this.world && !this.world.maracas) {
+    if (this.isDeadHandled) return;  // verhindert Doppelevents
+    this.isDeadHandled = true;
+
+    console.log("💀 Endboss ist tot!");
+
+    // 🛡️ Bodyguard ebenfalls töten
+    if (this.world?.bodyguard && !this.world.bodyguard.isDead) {
+      console.log("🛡️ Bodyguard stirbt zusammen mit dem Endboss!");
+      this.world.bodyguard.die();
+    }
+
+    // 🪇 Maracas erscheinen lassen
+    if (!this.world.maracas) {
       console.log("🎵 Maracas erscheinen gleich...");
       setTimeout(() => {
         this.world.maracas = new Maracas();
@@ -92,6 +104,7 @@ class Endboss extends MovableObject {
       }, 800);
     }
   }
+
 
 
   // Methode wird aufgerufen, wenn der Boss getroffen wird

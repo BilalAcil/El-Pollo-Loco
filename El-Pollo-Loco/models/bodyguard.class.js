@@ -283,6 +283,12 @@ class Bodyguard extends MovableObject {
     if (this.isDead) return;
     this.isDead = true;
 
+    // 🧹 STATUSBAR ENTFERNEN (WICHTIG!)
+    if (this.world?.bodyguardStatus) {
+      console.log("🧹 Bodyguard-Statusbar entfernt!");
+      this.world.bodyguardStatus = null;
+    }
+
     // ❗ Alle Bewegungs-Intervalle stoppen
     if (this.attackInterval) clearInterval(this.attackInterval);
     if (this.jumpInterval) clearInterval(this.jumpInterval);
@@ -296,12 +302,11 @@ class Bodyguard extends MovableObject {
     setTimeout(() => {
       this.dieSound.currentTime = 0;
       this.dieSound.play();
-    }, 200);  // kurze Verzögerung für besseren Effekt
+    }, 200);
 
-    // 👉 Sofort den Fall starten (ohne extra Animation vorher!)
+    // 👉 Sofort den Fall starten
     this.startFallingWhenDead();
   }
-
 
 
   startFallingWhenDead() {
