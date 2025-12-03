@@ -159,7 +159,7 @@ class Bodyguard extends MovableObject {
     if (this.lastSpeedX !== 0) {
       this.speedX = this.lastSpeedX;
     } else if (this.speedX === 0) {
-      this.speedX = -10;                          // Standard: nach links starten
+      this.speedX = -15;                          // Standard: nach links starten
     }
 
     // 👉 Blickrichtung nicht überschreiben!
@@ -178,7 +178,7 @@ class Bodyguard extends MovableObject {
         this.speedX = 0;
         setTimeout(() => {
           this.otherDirection = true;
-          this.speedX = +10;
+          this.speedX = +15;
         }, 200);
       }
 
@@ -186,7 +186,7 @@ class Bodyguard extends MovableObject {
         this.speedX = 0;
         setTimeout(() => {
           this.otherDirection = false;
-          this.speedX = -10;
+          this.speedX = -15;
         }, 200);
       }
 
