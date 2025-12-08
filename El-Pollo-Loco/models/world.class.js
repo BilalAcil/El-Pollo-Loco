@@ -845,6 +845,13 @@ class World {
 
   // 🧩 ZEIGE PAUSE, DANN PLAY SYMBOL
   showPauseThenPlaySymbol() {
+
+    // ❌ Wenn Startscreen sichtbar ist → GAR NICHTS anzeigen
+    const startScreen = document.getElementById('start-screen');
+    if (startScreen && !startScreen.classList.contains('hidden')) {
+      return;
+    }
+
     // Erst Pause-Symbol kurz anzeigen
     const pauseOverlay = document.createElement("div");
     pauseOverlay.innerHTML = "⏸";
@@ -876,6 +883,13 @@ class World {
 
   // 🧩 DAUERHAFTES PLAY-SYMBOL ZEIGEN
   showPlaySymbol() {
+
+    // ❌ Wenn Startscreen sichtbar ist → NICHT anzeigen
+    const startScreen = document.getElementById('start-screen');
+    if (startScreen && !startScreen.classList.contains('hidden')) {
+      return;
+    }
+
     // Wenn schon vorhanden → nicht doppelt anzeigen
     if (document.getElementById("play-overlay")) return;
 
