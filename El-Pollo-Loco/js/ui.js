@@ -1,20 +1,37 @@
 let isMuted = false;
+let canvas;
+let world;
+let keyboard = new Keyboard();
 
-window.addEventListener("DOMContentLoaded", () => init());
+/**
+ * Wird ausgeführt, sobald DOM geladen ist.
+ */
+window.addEventListener("DOMContentLoaded", init);
 
-
+/**
+ * Initialisiert die Seite, aber startet das Spiel noch nicht.
+ * Hier wird nur der Startbildschirm vorbereitet.
+ */
 function init() {
-  // Beim Laden: Startbildschirm anzeigen
+  canvas = document.getElementById('canvas');
+
+  if (!canvas) {
+    console.error("❌ Canvas nicht gefunden!");
+    return;
+  }
+
+  // Startscreen anzeigen, Spielbereich verstecken
   document.getElementById('start-screen').classList.remove('hidden');
   document.getElementById('canvas').style.display = 'none';
   document.getElementById('game-name').style.display = 'none';
+  document.getElementById('end-screen').classList.add('hidden');
 }
 
 /**
- * Startet das Spiel, wenn "Spielen" gedrückt wird
+ * Startet das Spiel, wenn "Spielen" gedrückt wird.
  */
 function startGame() {
-  canvas = document.getElementById('canvas');
+
   document.getElementById('game-name').style.display = 'block';
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('canvas').style.display = 'block';
@@ -22,13 +39,14 @@ function startGame() {
 
   startGameLogic();
 
-  // 🟢 Nach 200ms Spiel fortsetzen (alles starten)
+  // Welt nach kurzer Verzögerung fortsetzen
   setTimeout(() => {
     if (world && world.isPaused) {
       world.resumeGame();
     }
   }, 200);
 }
+
 
 
 /**

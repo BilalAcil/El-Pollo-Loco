@@ -1,20 +1,3 @@
-// === Globale Variablen ===
-var canvas;
-var world;
-var keyboard = new Keyboard();
-
-/**
- * Wird beim Laden der Seite aufgerufen,
- * aber startet das Spiel noch nicht.
- */
-function init() {
-  canvas = document.getElementById('canvas');
-  if (!canvas) {
-    console.error("❌ Canvas nicht gefunden!");
-    return;
-  }
-}
-
 /**
  * Wird von ui.js aufgerufen, wenn der Spieler „Start“ klickt
  */
