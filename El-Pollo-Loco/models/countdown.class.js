@@ -87,14 +87,15 @@ class Countdown extends DrawableObject {
    */
   playBackgroundMusic() {
     this.currentMusic = "normal";
-    this.bgMusic1.currentTime = 0;
-    this.bgMusic2.currentTime = 0;
-    this.bgMusic1.playbackRate = 1.0;
-    this.bgMusic2.playbackRate = 1.0;
 
-    this.bgMusic1.play().catch(e => console.warn(e));
-    this.bgMusic2.play().catch(e => console.warn(e));
+    // Kein Reset mehr – nur wenn wirklich neu starten!
+    if (this.bgMusic1.paused) this.bgMusic1.currentTime = 0;
+    if (this.bgMusic2.paused) this.bgMusic2.currentTime = 0;
+
+    this.safePlay(this.bgMusic1);
+    this.safePlay(this.bgMusic2);
   }
+
 
   /**
  * Wird aufgerufen, wenn Countdown bei 1:00 ist
@@ -103,7 +104,8 @@ class Countdown extends DrawableObject {
     if (this.isBlinking) return; // falls bereits aktiv → nicht nochmal starten
 
     this.isBlinking = true;
-    this.slowClockSound.play().catch(e => console.warn(e));
+    this.slowClockSound.currentTime = 0;
+    this.safePlay(this.slowClockSound);
 
     let blinkCount = 0;
     const blinkInterval = setInterval(() => {
@@ -161,34 +163,28 @@ class Countdown extends DrawableObject {
    * ⏸ Musik pausieren
    */
   pauseAllMusic() {
-    try {
-      if (this.bgMusic1 && !this.bgMusic1.paused) this.bgMusic1.pause();
-      if (this.bgMusic2 && !this.bgMusic2.paused) this.bgMusic2.pause();
-      if (this.endBossMusic && !this.endBossMusic.paused) this.endBossMusic.pause();
-      if (this.slowClockSound && !this.slowClockSound.paused) this.slowClockSound.pause(); // ⬅️ HIER NEU!
-
-    } catch (e) {
-      console.warn("Fehler beim Pausieren der Musik:", e);
-    }
+    [this.bgMusic1, this.bgMusic2, this.endBossMusic, this.slowClockSound].forEach(a => {
+      if (a && !a.paused) a.pause();
+    });
   }
 
 
-  resumeAllMusic() {
-    try {
-      if (this.currentMusic === "endboss") {
-        this.endBossMusic.play().catch(e => console.warn("Endboss-Musik Resume-Fehler:", e));
-      } else {
-        this.bgMusic1.play().catch(e => console.warn("bgMusic1 Resume-Fehler:", e));
-        this.bgMusic2.play().catch(e => console.warn("bgMusic2 Resume-Fehler:", e));
 
-        if (this.isBlinking) {  // Nur, wenn Slow-Clock aktiv ist
-          this.slowClockSound.play().catch(e => console.warn("slowClock Resume-Fehler:", e));
-        }
-      }
-    } catch (e) {
-      console.warn("Fehler beim Fortsetzen der Musik:", e);
+  async resumeAllMusic() {
+
+    if (this.currentMusic === "endboss") {
+      await this.safePlay(this.endBossMusic);
+      return;
+    }
+
+    await this.safePlay(this.bgMusic1);
+    await this.safePlay(this.bgMusic2);
+
+    if (this.isBlinking) {
+      await this.safePlay(this.slowClockSound);
     }
   }
+
 
 
 
@@ -228,4 +224,17 @@ class Countdown extends DrawableObject {
     const seconds = this.countdownTime % 60;
     return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   }
+
+  async safePlay(audio) {
+    try {
+      if (audio.paused) {
+        await audio.play();
+      }
+    } catch (e) {
+      console.warn("Audio-Play-Fehler:", e);
+    }
+  }
+
 }
+
+
