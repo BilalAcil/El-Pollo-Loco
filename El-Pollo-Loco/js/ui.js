@@ -2,6 +2,7 @@ let isMuted = false;
 let canvas;
 let world;
 let keyboard = new Keyboard();
+let gameInitialized = false;
 
 /**
  * Wird ausgeführt, sobald DOM geladen ist.
@@ -28,24 +29,56 @@ function init() {
 }
 
 /**
+ * Erzeugt einmalig die World, damit ALLE Assets (Pepe, Statusbars, Coins, etc.)
+ * schon beim Laden der Seite vorgeladen werden.
+ */
+function preloadWorld() {
+  if (gameInitialized) return; // nur einmal ausführen
+  gameInitialized = true;
+
+  canvas = document.getElementById('canvas');
+  if (!canvas) {
+    console.error('❌ Canvas nicht gefunden (preloadWorld)!');
+    return;
+  }
+
+  // ⬇️ deine bisherige Spiel-Initialisierung
+  startGameLogic();            // erstellt world = new World(...)
+
+  // ⏸️ direkt pausieren, damit nichts "losläuft", bevor der Spieler startet
+  if (world && typeof world.pauseGame === 'function') {
+    // 🔥 pausieren OHNE Pause-/Play-Symbol
+    world.pauseGame(false);
+  } else if (world) {
+    world.isPaused = true;
+  }
+
+}
+
+
+/**
  * Startet das Spiel, wenn "Spielen" gedrückt wird.
  */
 function startGame() {
-
   document.getElementById('game-name').style.display = 'block';
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('canvas').style.display = 'block';
   document.getElementById('end-screen').classList.add('hidden');
 
-  startGameLogic();
-
-  // Welt nach kurzer Verzögerung fortsetzen
   setTimeout(() => {
-    if (world && world.isPaused) {
+    if (world) {
+      // ✅ Ab jetzt dürfen Pause-/Play-Overlays erscheinen
+      world.allowPauseOverlay = true;
+    }
+
+    if (world && typeof world.resumeGame === 'function') {
       world.resumeGame();
+    } else if (world) {
+      world.isPaused = false;
     }
   }, 200);
 }
+
 
 
 
@@ -192,18 +225,22 @@ function returnToHome() {
  * Warten, bis Browser + Spiel intern vollständig geladen sind
  */
 window.addEventListener('load', async () => {
+  // 🔥 Welt + alle Objekte (Pepe, Statusbars, Coins, etc.) ERZEUGEN
+  preloadWorld();
 
-  // interne Ressourcen prüfen
+  // 🔥 jetzt lädt DrawableObject alle Bilder dieser Objekte
   await waitForGameAssets();
 
   const startBtn = document.getElementById('start-btn');
   if (startBtn) {
-    startBtn.classList.remove('loading');
+    startBtn.classList.remove('loading', 'hidden');
     startBtn.removeAttribute('disabled');
     startBtn.textContent = '🎮 Spiel starten';
     startBtn.onclick = startGame;
   }
 });
+
+
 
 /**
  * Prüft in Intervallen, ob Spielressourcen geladen sind
@@ -216,19 +253,38 @@ async function waitForGameAssets() {
     const check = setInterval(() => {
       const imagesLoaded = [...document.querySelectorAll('img')].every(img => img.complete);
 
-      const assetsReady =
+      const classesReady =
         typeof World !== 'undefined' &&
         typeof level1 !== 'undefined' &&
         typeof Character !== 'undefined' &&
         typeof StatusBar !== 'undefined' &&
         typeof StatusBarCoin !== 'undefined' &&
-        typeof StatusBarSalsa !== 'undefined' &&
-        imagesLoaded;
+        typeof StatusBarSalsa !== 'undefined';
+
+      const drawableReady =
+        typeof DrawableObject === 'undefined' || DrawableObject.areAllAssetsLoaded();
+
+      console.log(
+        '[Loader] totalAssets:',
+        DrawableObject.totalAssets,
+        'loadedAssets:',
+        DrawableObject.loadedAssets,
+        'drawableReady:',
+        drawableReady
+      );
+
+      const assetsReady =
+        classesReady &&
+        imagesLoaded &&
+        drawableReady;
 
       if (assetsReady || Date.now() - startTime > timeout) {
         clearInterval(check);
+        console.log('[Loader] Fertig, assetsReady =', assetsReady);
         resolve();
       }
     }, 200);
   });
 }
+
+

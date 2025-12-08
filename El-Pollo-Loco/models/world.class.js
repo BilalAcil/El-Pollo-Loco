@@ -23,6 +23,7 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
     this.keyboard = keyboard;
+    this.allowPauseOverlay = false;
 
     // Welt zeichnen und initialisieren
     this.draw();
@@ -750,27 +751,29 @@ class World {
   }
 
   // 🧩 SPIEL PAUSIEREN
-  pauseGame() {
-    if (this.isPaused || (this.world && this.world.isPaused)) return;
+  pauseGame(showOverlay = true) {
+    if (this.isPaused) return;
 
     this.isPaused = true;
 
-    // Bewegungen & Animationen anhalten
     this.pauseAllMovements();
 
-    // Pepe & Endboss pausieren
     if (this.character) this.character.pause();
     if (this.endboss) this.endboss.pause();
 
-    // ⏸ Musik und Countdown
     if (this.countdown) {
       this.countdown.pauseAllMusic();
-      this.countdown.pauseCountdown();   // ⏸ Countdown anhalten
+      this.countdown.pauseCountdown();
     }
 
-    // Pause-Symbol + Play-Symbol
-    this.showPauseThenPlaySymbol();
+    // 🔥 Nur Overlay anzeigen, wenn es auch erlaubt ist
+    if (showOverlay && this.allowPauseOverlay) {
+      this.showPauseThenPlaySymbol();
+    }
   }
+
+
+
 
   // 🧩 SPIEL FORTSETZEN
   resumeGame() {

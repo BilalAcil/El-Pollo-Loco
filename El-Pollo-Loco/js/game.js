@@ -13,6 +13,7 @@ function startGameLogic() {
   };
 }
 
+
 /**
  * Stoppt das Spiel (z. B. bei Game Over)
  */

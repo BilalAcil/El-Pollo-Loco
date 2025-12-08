@@ -541,9 +541,13 @@ class Character extends MovableObject {
 
 
 
-
   applyGravity() {
     setInterval(() => {
+      // 🔥 NEU: Wenn das Spiel/der Charakter pausiert ist → keine Gravitation
+      if (this.isPaused || (this.world && this.world.isPaused)) {
+        return;
+      }
+
       // 🧠 Wenn Pepe stirbt oder tot ist → keine Gravitation mehr
       if (this.energy <= 0 || this.isDying) {
         return;
@@ -565,4 +569,5 @@ class Character extends MovableObject {
       }
     }, 1000 / 25);
   }
+
 }
