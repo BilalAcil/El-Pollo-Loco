@@ -57,6 +57,8 @@ class World {
 
     // ▶️ Play-Symbol zeigen (damit sichtbar ist, dass man starten kann)
     this.showPlaySymbol();
+
+    this.isMaracasSequence = false; // 👈 Neues Flag
   }
 
 
@@ -183,9 +185,9 @@ class World {
               this.character.speedX = 10 * randomDirection;
               this.character.knockbackActive = true;
 
-              // 🚧 X-Grenzen absichern (4000–4570)
+              // 🚧 X-Grenzen absichern (4100–4570)
               setTimeout(() => {
-                if (this.character.x < 4000) this.character.x = 4000;
+                if (this.character.x < 4100) this.character.x = 4100;
                 if (this.character.x > 4570) this.character.x = 4570;
               }, 20);
 
@@ -467,6 +469,9 @@ class World {
 
       // 🎵 Maracas-Kollision
       if (this.maracas && this.character.isColliding(this.maracas)) {
+
+        this.isMaracasSequence = true;  // 👈 Ab hier: Endsequenz läuft
+
         // Maracas verschwindet
         this.maracas = null;
 
@@ -752,6 +757,16 @@ class World {
 
   // 🧩 SPIEL PAUSIEREN
   pauseGame(showOverlay = true) {
+    // ⛔ Während Bodyguard-Sprung ODER Endboss-Tod keine Pause zulassen
+    if (
+      (this.bodyguard && this.bodyguard.isJumping) ||                 // Bodyguard springt runter
+      (this.character && this.character.freezeForBodyguard) ||        // Spieler ist für Bodyguard gesperrt
+      (this.endboss && this.endboss.isDead) ||
+      this.isMaracasSequence                     // 👈 NEU
+    ) {
+      return;
+    }
+
     if (this.isPaused) return;
 
     this.isPaused = true;
@@ -760,17 +775,19 @@ class World {
 
     if (this.character) this.character.pause();
     if (this.endboss) this.endboss.pause();
+    if (this.bodyguard) this.bodyguard.pause();
 
     if (this.countdown) {
       this.countdown.pauseAllMusic();
       this.countdown.pauseCountdown();
     }
 
-    // 🔥 Nur Overlay anzeigen, wenn es auch erlaubt ist
     if (showOverlay && this.allowPauseOverlay) {
       this.showPauseThenPlaySymbol();
     }
   }
+
+
 
 
 

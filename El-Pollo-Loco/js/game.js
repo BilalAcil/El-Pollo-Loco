@@ -8,10 +8,15 @@ function startGameLogic() {
   // 🖱️ Klick auf Canvas = Pause/Play Toggle
   canvas.onclick = () => {
     if (!world) return;
+
+    // ⛔ Während Maracas-Sequenz keine Pause
+    if (world.isMaracasSequence) return;
+
     if (world.isPaused) world.resumeGame();
     else world.pauseGame();
   };
 }
+
 
 
 /**
@@ -27,6 +32,14 @@ function stopGame() {
 
 // === Tasteneingaben erfassen ===
 window.addEventListener('keydown', (e) => {
+  // 👉 Ohne Welt nichts machen
+  if (!world) return;
+
+  // ⛔ Während Maracas-Endsequenz ALLE Eingaben ignorieren
+  if (world.isMaracasSequence) {
+    return;
+  }
+
   if (e.key === 'ArrowRight') keyboard.RIGHT = true;
   if (e.key === 'ArrowLeft') keyboard.LEFT = true;
   if (e.key === 'ArrowUp') keyboard.UP = true;
@@ -34,10 +47,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === ' ') keyboard.SPACE = true;
   if (e.key === 'd' || e.key === 'D') keyboard.D = true;
 
-  // 🧩 NEU: Pause/Play mit Taste „P“
+  // 🧩 Pause/Play mit Taste „P“
   if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
-    if (!world) return;
-
     if (world.isPaused) {
       world.resumeGame();   // ▶️ fortsetzen
     } else {
@@ -54,3 +65,4 @@ window.addEventListener('keyup', (e) => {
   if (e.key === ' ') keyboard.SPACE = false;
   if (e.key === 'd' || e.key === 'D') keyboard.D = false;
 });
+
