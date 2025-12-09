@@ -58,6 +58,7 @@ class DrawableObject {
       this instanceof Endboss ||
       this instanceof ChickenSmall ||
       this instanceof Corncob ||
+      this instanceof ChickenCoop ||
       this instanceof Coin ||
       this instanceof Salsa ||
       this instanceof Maracas ||

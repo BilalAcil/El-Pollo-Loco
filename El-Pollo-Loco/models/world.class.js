@@ -12,6 +12,7 @@ class World {
   bodyguardStatus = null; // Wird erstellt, wenn Bodyguard erscheint
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
   corncob = new Corncob();
+  chickenCoop = new ChickenCoop();
   chickenNest = new ChickenNest();
   bodyguard = new Bodyguard();
   coins = []; // mehrere Münzen statt einer
@@ -612,8 +613,13 @@ class World {
       this.addToMap(this.corncob);
     }
 
+
+
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
+    if (this.chickenCoop) {
+      this.addToMap(this.chickenCoop);
+    }
     this.addObjectsToMap(this.throwableObjects);
     this.ctx.translate(-this.camera_x, 0); // Reset the camera position
 
