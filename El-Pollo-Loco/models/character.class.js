@@ -143,25 +143,53 @@ class Character extends MovableObject {
     // Bewegung und Kamera
     setInterval(() => {
       if (this.isPaused) return;  // ⏸ Bewegung einfrieren
-      if (this.atEndboss) {
-        this.world.camera_x = -4100 + 100;
-      } else {
-        this.world.camera_x = -this.x + 100;
+
+      // 🎥 Kamera-Logik
+      if (this.world) {
+        // 1️⃣ Weiches Panning aktiv?
+        if (this.world.isCameraPanning && typeof this.world.cameraTargetX === 'number') {
+          const target = this.world.cameraTargetX;
+          const speed = this.world.cameraPanSpeed || 2;
+
+          if (this.world.camera_x < target) {
+            this.world.camera_x += speed;
+            if (this.world.camera_x > target) this.world.camera_x = target;
+          } else if (this.world.camera_x > target) {
+            this.world.camera_x -= speed;
+            if (this.world.camera_x < target) this.world.camera_x = target;
+          }
+
+          // Ziel erreicht → Panning beenden & feste Endboss-Kamera setzen
+          if (Math.abs(this.world.camera_x - target) < 1) {
+            this.world.camera_x = target;
+            this.world.isCameraPanning = false;
+            this.world.endbossCameraX = target; // ab jetzt bleibt sie dort
+          }
+
+          // 2️⃣ Im Endbossbereich, aber kein aktives Panning
+        } else if (this.atEndboss) {
+          // Wenn schon eine feste Endboss-Kameraposition existiert → diese nutzen
+          if (typeof this.world.endbossCameraX === 'number') {
+            this.world.camera_x = this.world.endbossCameraX;
+          } else {
+            // Standard: fester Bereich 4000–4600 (wie bisher)
+            this.world.camera_x = -4100 + 100; // = -4000
+          }
+
+          // 3️⃣ Normaler Kamerafollow außerhalb des Endbossbereichs
+        } else {
+          this.world.camera_x = -this.x + 100;
+        }
       }
 
       // 🧩 Knockback-Bewegung automatisch verarbeiten
       if (this.knockbackActive) {
         this.x += this.speedX;
-
-        // Reibung / allmähliches Stoppen
         this.speedX *= 0.9;
-
-        // Wenn fast gestoppt, Knockback beenden
         if (Math.abs(this.speedX) < 1) {
           this.knockbackActive = false;
           this.speedX = 0;
         }
-
       }
 
       // 🧩 Bewegung deaktivieren, wenn Welt pausiert ist

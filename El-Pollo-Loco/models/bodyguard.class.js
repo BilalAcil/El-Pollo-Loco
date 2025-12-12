@@ -236,17 +236,16 @@ class Bodyguard extends MovableObject {
       this.world.bodyguardStatus.setPercentage(this.energy);
     }
 
-    // ❗❗❗ HIER FÜGEN WIR DEN FALLBACK EIN ❗❗❗
+    // ❗❗❗ FALLBACK BEI HIT ❗❗❗
     if (this.world && this.world.character) {
       const player = this.world.character;
 
-      // 1️⃣ Spieler steht rechts → Bodyguard soll NICHT zurückweichen:
+      // 1️⃣ Spieler steht rechts → Bodyguard NICHT zurückweichen lassen
       if (player.x > this.x) {
         this.otherDirection = false;  // Rechts schauen
         this.speedX = 5;              // leicht vorwärts gehen
       }
-
-      // 2️⃣ Spieler steht links → Bodyguard soll auch nicht zurückweichen:
+      // 2️⃣ Spieler steht links → auch nicht zurückweichen
       else {
         this.otherDirection = true;   // Links schauen
         this.speedX = -5;             // leicht vorwärts gehen
@@ -257,6 +256,11 @@ class Bodyguard extends MovableObject {
 
     // WENN TOT → STERBEN
     if (this.energy <= 0) {
+      // 🎥 Kamera zurück zur ursprünglichen Endboss-Position
+      if (this.world && typeof this.world.onBodyguardDeath === 'function') {
+        this.world.onBodyguardDeath();
+      }
+
       this.die();
       return;
     }
@@ -277,6 +281,7 @@ class Bodyguard extends MovableObject {
       }
     }, FRAME_DELAY);
   }
+
 
 
   die() {

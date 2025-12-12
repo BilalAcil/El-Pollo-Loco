@@ -25,6 +25,13 @@ class World {
     this.keyboard = keyboard;
     this.allowPauseOverlay = false;
 
+    // 🎥 Kamera-Steuerung für Endbossbereich
+    this.isCameraPanning = false;   // ob gerade weich verschoben wird
+    this.cameraTargetX = null;      // Zielwert von camera_x
+    this.cameraPanSpeed = 2;        // Geschwindigkeit des Pannings (je kleiner, desto langsamer)
+    this.endbossCameraX = undefined; // final fixierte Kamera-Position im Endbossbereich
+    this.hasBodyguardDied = false; // 👈 NEU: damit wir es nur einmal machen
+
     // Welt zeichnen und initialisieren
     this.draw();
     this.setWorld();
@@ -667,6 +674,37 @@ class World {
   }
 
 
+  // 🎥 Weiches Kamera-Panning im Endbossbereich (4000–4600 → 3850–4450)
+  startEndbossCameraPan() {
+    // Wenn schon gepannt wird oder schon auf der Zielposition → nichts tun
+    if (this.isCameraPanning || this.endbossCameraX === -3770) return;
+
+    // Zielkamera-Wert:
+    // Aktuell: camera_x = -4000  → sichtbarer Bereich: 4000–4600
+    // Ziel:    camera_x = -3850  → sichtbarer Bereich: 3770–4370
+    this.cameraTargetX = -3770;
+    this.cameraPanSpeed = 2;      // kannst du anpassen (1 = sehr langsam, 3 = schneller)
+    this.isCameraPanning = true;
+  }
+
+  // 🎥 Kamera wieder in ursprüngliche Endboss-Position (4000–4600) fahren
+  startEndbossCameraPanBack() {
+    if (this.isCameraPanning) return; // nicht doppelt
+    // ursprüngliche Endboss-Kameraposition:
+    // camera_x = -4100 + 100 = -4000
+    this.cameraTargetX = -4100 + 100;  // = -4000
+    this.cameraPanSpeed = 2;           // ggf. anpassen (1 langsamer, 3 schneller)
+    this.isCameraPanning = true;
+  }
+
+  // Wird aufgerufen, wenn der Bodyguard stirbt
+  onBodyguardDeath() {
+    if (this.hasBodyguardDied) return;  // nur einmal ausführen
+    this.hasBodyguardDied = true;
+    this.startEndbossCameraPanBack();
+  }
+
+
   /**
    * Stoppt das Spiel komplett (z. B. bei Game Over).
    */
@@ -994,5 +1032,7 @@ class World {
         }
       }, 30);
     }
+    // 🎥 NACH dem Sprung: Kamera langsam nach links verschieben
+    this.startEndbossCameraPan();
   }
 }
