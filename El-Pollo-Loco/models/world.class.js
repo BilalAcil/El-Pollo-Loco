@@ -198,11 +198,22 @@ class World {
               this.character.speedX = 10 * randomDirection;
               this.character.knockbackActive = true;
 
-              // 🚧 X-Grenzen absichern (4100–4570)
+              // 🚧 X-Grenzen an aktuelle Kamera/Viewport anpassen
               setTimeout(() => {
-                if (this.character.x < 4100) this.character.x = 4100;
-                if (this.character.x > 4570) this.character.x = 4570;
+                // Sichtbarer Bereich im Welt-Koordinatensystem
+                const viewLeft = -this.camera_x;
+                const viewRight = -this.camera_x + this.canvas.width;
+
+                // Kleiner Rand, damit Pepe nicht genau am Bildrand klebt
+                const margin = 30;
+
+                const minX = viewLeft + margin;
+                const maxX = viewRight - this.character.width - margin;
+
+                if (this.character.x < minX) this.character.x = minX;
+                if (this.character.x > maxX) this.character.x = maxX;
               }, 20);
+
 
               return; // verhindert Mehrfachkollision
             }

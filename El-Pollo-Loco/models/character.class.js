@@ -204,27 +204,41 @@ class Character extends MovableObject {
       if (this.freezeForBodyguard)
         return;
 
-      // Bewegung
-      if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
+      // 👉 AKTUELLE LAUF-GRENZEN BERECHNEN
+      let minX = 0;
+      let maxX = this.world.level.level_end_x;
+
+      if (this.atEndboss && this.world && this.world.canvas) {
+        // Sichtbarer Bereich im Welt-Koordinatensystem
+        const viewLeft = -this.world.camera_x;
+        const viewRight = -this.world.camera_x + this.world.canvas.width;
+
+        const margin = 10; // kleiner Rand, damit Pepe nicht direkt am Bildschirmrand klebt
+
+        minX = viewLeft + margin;
+        maxX = viewRight - this.width - margin;
+      }
+
+      // Bewegung RECHTS
+      if (this.world.keyboard.RIGHT && this.x < maxX) {
         this.moveRight();
         this.otherDirection = false;
         this.handleMovement();
       }
 
-      if (
-        this.world.keyboard.LEFT &&
-        this.x > 0 &&
-        (!this.atEndboss || this.x > 3980)
-      ) {
+      // Bewegung LINKS
+      if (this.world.keyboard.LEFT && this.x > minX) {
         this.moveLeft();
         this.otherDirection = true;
         this.handleMovement();
       }
 
+      // Springen
       if (this.world.keyboard.SPACE && !this.isAboveGround()) {
         this.jump();
         this.handleMovement();
       }
+
 
       // 👉 WURF-ANIMATION (Taste D)
       if (this.world.keyboard.D && this.animationFinished) {
