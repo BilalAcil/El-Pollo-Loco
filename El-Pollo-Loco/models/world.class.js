@@ -32,6 +32,12 @@ class World {
     this.endbossCameraX = undefined; // final fixierte Kamera-Position im Endbossbereich
     this.hasBodyguardDied = false; // 👈 NEU: damit wir es nur einmal machen
 
+    // 🔊 Kamera-Schiebe-Sound
+    this.cameraMoveSound = new Audio('audio/push-stone.mp3');
+    this.cameraMoveSound.volume = 0.4;  // nach Geschmack anpassen
+    this.cameraMoveSound.loop = true;   // soll während des Schiebens durchlaufen
+    this.cameraMoveSound.load();
+
     // Welt zeichnen und initialisieren
     this.draw();
     this.setWorld();
@@ -685,7 +691,33 @@ class World {
     this.cameraTargetX = -3770;
     this.cameraPanSpeed = 2;      // kannst du anpassen (1 = sehr langsam, 3 = schneller)
     this.isCameraPanning = true;
+
+    // 🔊 Sound starten
+    this.playCameraMoveSound();
   }
+
+
+  playCameraMoveSound() {
+    if (!this.cameraMoveSound) return;
+    try {
+      this.cameraMoveSound.currentTime = 0;
+      this.cameraMoveSound.play();
+    } catch (e) {
+      console.warn('Kamera-Sound konnte nicht abgespielt werden:', e);
+    }
+  }
+
+  stopCameraMoveSound() {
+    if (!this.cameraMoveSound) return;
+    try {
+      this.cameraMoveSound.pause();
+      this.cameraMoveSound.currentTime = 0;
+    } catch (e) {
+      console.warn('Kamera-Sound konnte nicht gestoppt werden:', e);
+    }
+  }
+
+
 
   // 🎥 Kamera wieder in ursprüngliche Endboss-Position (4000–4600) fahren
   startEndbossCameraPanBack() {
@@ -695,6 +727,9 @@ class World {
     this.cameraTargetX = -4100 + 100;  // = -4000
     this.cameraPanSpeed = 2;           // ggf. anpassen (1 langsamer, 3 schneller)
     this.isCameraPanning = true;
+
+    // 🔊 Sound starten
+    this.playCameraMoveSound();
   }
 
   // Wird aufgerufen, wenn der Bodyguard stirbt

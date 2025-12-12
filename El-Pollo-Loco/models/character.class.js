@@ -164,6 +164,11 @@ class Character extends MovableObject {
             this.world.camera_x = target;
             this.world.isCameraPanning = false;
             this.world.endbossCameraX = target; // ab jetzt bleibt sie dort
+
+            // 🔊 Sound stoppen
+            if (typeof this.world.stopCameraMoveSound === 'function') {
+              this.world.stopCameraMoveSound();
+            }
           }
 
           // 2️⃣ Im Endbossbereich, aber kein aktives Panning
