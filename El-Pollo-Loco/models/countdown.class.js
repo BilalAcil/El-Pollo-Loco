@@ -38,6 +38,9 @@ class Countdown extends DrawableObject {
 
     // ✨ NEU: kurz komplett ausblenden (Icon + Zahl)
     this.isTemporarilyHidden = false;
+
+    // ⏱️ NEU: Timeout-Handle für verzögerten Endboss-Start
+    this.endBossMusicTimeout = null;
   }
   /**
    * Startet den Countdown und die Musik – nur einmal
@@ -135,6 +138,12 @@ class Countdown extends DrawableObject {
     this.countdownTime = 0;
     this.isStarted = false;
 
+    // ⏱️ NEU: Verzögerten Endboss-Start abbrechen
+    if (this.endBossMusicTimeout) {
+      clearTimeout(this.endBossMusicTimeout);
+      this.endBossMusicTimeout = null;
+    }
+
     // 🎵 Alles stoppen
     [this.bgMusic1, this.bgMusic2, this.endBossMusic, this.slowClockSound].forEach(audio => {
       if (audio) {
@@ -145,31 +154,51 @@ class Countdown extends DrawableObject {
   }
 
 
+
   /**
-   * 🔊 Wechselt zur Endboss-Musik
+   * 🔊 Wechselt zur Endboss-Musik (mit Verzögerung)
    */
-  playEndBossMusic() {
-    if (this.currentMusic !== "endboss") {
-      this.currentMusic = "endboss";
+  playEndBossMusic(delay = 3200) {
+    if (this.currentMusic === "endboss") return;
 
-      // Normale Musik stoppen
-      this.bgMusic1.pause();
-      this.bgMusic2.pause();
+    this.currentMusic = "endboss";
 
-      // Endboss-Musik starten (ohne Reset!)
-      this.endBossMusic.play().catch(e => console.warn(e));
+    // Normale Musik sofort stoppen
+    this.bgMusic1.pause();
+    this.bgMusic2.pause();
+
+    // Falls schon ein Timeout läuft → abbrechen
+    if (this.endBossMusicTimeout) {
+      clearTimeout(this.endBossMusicTimeout);
+      this.endBossMusicTimeout = null;
     }
+
+    // 🎬 Endboss-Musik verzögert starten
+    this.endBossMusicTimeout = setTimeout(() => {
+      this.endBossMusic.currentTime = 0;
+      this.endBossMusic
+        .play()
+        .catch(e => console.warn('Endboss-Musik Fehler:', e));
+    }, delay);
   }
+
 
 
   /**
    * ⏸ Musik pausieren
    */
   pauseAllMusic() {
+    // ⏱️ NEU: Verzögerten Start abbrechen, wenn pausiert wird
+    if (this.endBossMusicTimeout) {
+      clearTimeout(this.endBossMusicTimeout);
+      this.endBossMusicTimeout = null;
+    }
+
     [this.bgMusic1, this.bgMusic2, this.endBossMusic, this.slowClockSound].forEach(a => {
       if (a && !a.paused) a.pause();
     });
   }
+
 
 
 
