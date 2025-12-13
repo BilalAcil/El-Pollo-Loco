@@ -110,56 +110,75 @@ function toggleMute() {
  * @param {boolean} win - true = gewonnen, false = verloren
  */
 function showEndScreen(win) {
-  // ❗ Daten zuerst retten, bevor die Welt zerstört wird
+  // ❗ Daten zuerst retten, bevor die Welt zerstört / gestoppt wird
   const coinCount = world?.statusBarCoin?.coinCount ?? 0;
   const salsaCount = world?.statusBarSalsa?.salsaCount ?? 0;
 
-  stopGame();
+  // Spiel stoppen (Bewegungen/Intervalle etc.)
+  if (typeof stopGame === 'function') {
+    stopGame();
+  }
 
   const endScreen = document.getElementById('end-screen');
-  const messageEl = document.getElementById('end-message');
-  const buttonContainer = endScreen.querySelector('.menu-box');
-  const statsBox = document.getElementById('stats-box'); // Element ist im HTML vorhanden!
+  if (!endScreen) {
+    console.error('❌ end-screen nicht gefunden!');
+    return;
+  }
 
-  document.getElementById('canvas').style.display = 'none';
-  document.getElementById('game-name').style.display = 'none';
+  const buttonContainer = endScreen.querySelector('.menu-box');
+  if (!buttonContainer) {
+    console.error('❌ .menu-box im end-screen nicht gefunden!');
+    return;
+  }
+
+  // 🧩 Sicherstellen, dass stats-box existiert
+  let statsBox = document.getElementById('stats-box');
+  if (!statsBox) {
+    statsBox = document.createElement('div');
+    statsBox.id = 'stats-box';
+    statsBox.classList.add('hidden');
+    buttonContainer.appendChild(statsBox);
+  }
 
   // 🧹 StatsBox am Anfang immer leeren
   statsBox.innerHTML = "";
 
+  // Canvas + Titel ausblenden
+  const canvasEl = document.getElementById('canvas');
+  const titleEl = document.getElementById('game-name');
+  if (canvasEl) canvasEl.style.display = 'none';
+  if (titleEl) titleEl.style.display = 'none';
+
   if (win) {
-    messageEl.textContent = '🪇 Du hast die Maracas zurückgeholt! 🪇';
-
-    statsBox.innerHTML = `
-  <p><span class="stats-coin">🪙 <b>${world.statusBarCoin.coinCount}</b>x</span></p>
-  <p><span class="stats-salsa">🌶️ <b>${world.statusBarSalsa.salsaCount}</b>x</span></p>
-`;
-
-    statsBox.classList.remove('hidden');
-
-    // ❗ ZUERST Buttons erzeugen …
+    // 🏆 Gewinnscreen
     buttonContainer.innerHTML = `
       <h2 id="end-message">🪇 Du hast die Maracas zurückgeholt! 🪇</h2>
       <button onclick="nextLevel()">🎸 Gitarre holen</button>
       <button onclick="returnToHome()">🏠 Zurück zum Start</button>
     `;
 
-    // … DANN statsBox wieder anhängen!
+    // statsBox wieder anhängen + füllen
+    statsBox.innerHTML = `
+      <p><span class="stats-coin">🪙 <b>${coinCount}</b>x</span></p>
+      <p><span class="stats-salsa">🌶️ <b>${salsaCount}</b>x</span></p>
+    `;
+    statsBox.classList.remove('hidden');
     buttonContainer.appendChild(statsBox);
 
   } else {
-    messageEl.textContent = '💀 Du hast verloren!';
-    statsBox.classList.add('hidden');
-
+    // 💀 Verloren-Screen
     buttonContainer.innerHTML = `
       <h2 id="end-message">💀 Du hast verloren!</h2>
       <button onclick="restartGame()">🔁 Nochmal spielen</button>
       <button onclick="returnToHome()">🏠 Zurück zum Start</button>
     `;
+
+    statsBox.classList.add('hidden'); // hier keine Stats anzeigen
   }
 
   endScreen.classList.remove('hidden');
 }
+
 
 
 /**
@@ -168,20 +187,47 @@ function showEndScreen(win) {
 function restartGame() {
   console.clear();
 
-  canvas = document.getElementById('canvas');  // 🔥 Garantiert, dass Canvas-Referenz stimmt
+  // 🔧 Sicherstellen, dass Canvas-Referenz stimmt
+  canvas = document.getElementById('canvas');
 
-  // 🛠 stats-box neu erstellen!
+  // 🛑 Alte Welt stoppen (falls stopGame existiert)
+  if (typeof stopGame === 'function') {
+    stopGame();            // ruft intern vermutlich world.stop()/pauseAllMovements()
+  }
+  // Referenz auf alte World löschen
+  world = null;
+
+  // 🧼 Preload-Flag zurücksetzen, damit preloadWorld erneut eine neue World erzeugt
+  gameInitialized = false;
+
+  // 🧠 stats-box aufräumen / neu initialisieren
   const oldStatsBox = document.getElementById('stats-box');
-  if (oldStatsBox) oldStatsBox.remove();
+  if (oldStatsBox) {
+    oldStatsBox.innerHTML = '';
+    oldStatsBox.classList.add('hidden');
+  }
 
-  const newStatsBox = document.createElement('div');
-  newStatsBox.id = "stats-box";
-  newStatsBox.classList.add("hidden");
-  document.querySelector('#end-screen .menu-box').appendChild(newStatsBox);
-
+  // ENDSCREEN ausblenden, Canvas & Titel wieder zeigen
   document.getElementById('end-screen').classList.add('hidden');
-  startGame();
+  document.getElementById('canvas').style.display = 'block';
+  document.getElementById('game-name').style.display = 'block';
+
+  // 🌍 Neue World erzeugen (wie beim ersten Laden)
+  preloadWorld();   // erstellt world = new World(canvas, keyboard) und pausiert sie
+
+  // ⏯️ Kurz warten, dann Spiel wirklich starten
+  setTimeout(() => {
+    if (world) {
+      world.allowPauseOverlay = true; // Pause-Overlay wieder erlauben
+      if (typeof world.resumeGame === 'function') {
+        world.resumeGame();
+      } else {
+        world.isPaused = false;
+      }
+    }
+  }, 200);
 }
+
 
 
 
