@@ -185,7 +185,6 @@ function showEndScreen(win) {
  * Spiel neu starten
  */
 function restartGame() {
-  console.clear();
 
   // 🔧 Sicherstellen, dass Canvas-Referenz stimmt
   canvas = document.getElementById('canvas');
@@ -227,9 +226,6 @@ function restartGame() {
     }
   }, 200);
 }
-
-
-
 
 
 
