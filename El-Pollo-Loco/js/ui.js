@@ -310,15 +310,6 @@ async function waitForGameAssets() {
       const drawableReady =
         typeof DrawableObject === 'undefined' || DrawableObject.areAllAssetsLoaded();
 
-      console.log(
-        '[Loader] totalAssets:',
-        DrawableObject.totalAssets,
-        'loadedAssets:',
-        DrawableObject.loadedAssets,
-        'drawableReady:',
-        drawableReady
-      );
-
       const assetsReady =
         classesReady &&
         imagesLoaded &&
@@ -326,7 +317,6 @@ async function waitForGameAssets() {
 
       if (assetsReady || Date.now() - startTime > timeout) {
         clearInterval(check);
-        console.log('[Loader] Fertig, assetsReady =', assetsReady);
         resolve();
       }
     }, 200);
