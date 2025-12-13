@@ -18,7 +18,7 @@ class BodyguardStatusBar extends DrawableObject {
     this.height = 60;
     this.width = 200;
     this.x = 4260;
-    this.y = 80;
+    this.y = 10;
     this.setPercentage(100);
   }
 

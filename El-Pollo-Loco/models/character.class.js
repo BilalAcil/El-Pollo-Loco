@@ -267,6 +267,11 @@ class Character extends MovableObject {
         // Musik abspielen
         if (this.world && this.world.countdown) {
           this.world.countdown.playEndBossMusic();
+
+          // ⏱️ NEU: Countdown für 2 Sekunden ausblenden
+          if (typeof this.world.countdown.hideTemporarily === 'function') {
+            this.world.countdown.hideTemporarily(3000);
+          }
         }
 
         // Spieler anhalten
@@ -275,10 +280,10 @@ class Character extends MovableObject {
         // 📌 BODYGUARD herunterspringen lassen
         if (this.world.bodyguard && !this.world.bodyguard.hasJumped) {
           this.world.bodyguard.jumpToEndboss();
-          this.world.bodyguard.hasJumped = true;   // verhindert mehrfachen Aufruf
+          this.world.bodyguard.hasJumped = true;
         }
-
       }
+
 
 
 

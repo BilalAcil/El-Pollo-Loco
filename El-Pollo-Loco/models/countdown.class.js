@@ -35,6 +35,9 @@ class Countdown extends DrawableObject {
     // ✨ NEU: Blinken
     this.isBlinking = false;
     this.blinkVisible = true;
+
+    // ✨ NEU: kurz komplett ausblenden (Icon + Zahl)
+    this.isTemporarilyHidden = false;
   }
   /**
    * Startet den Countdown und die Musik – nur einmal
@@ -206,9 +209,24 @@ class Countdown extends DrawableObject {
   }
 
   /**
+ * Blendet den Countdown (Icon + Text) für eine bestimmte Zeit aus
+ */
+  hideTemporarily(duration = 2000) {
+    this.isTemporarilyHidden = true;
+
+    setTimeout(() => {
+      this.isTemporarilyHidden = false;
+    }, duration);
+  }
+
+
+  /**
    * ⏱ Zeit formatieren
    */
   draw(ctx) {
+
+    // 👇 NEU: komplett nix zeichnen, wenn temporär versteckt
+    if (this.isTemporarilyHidden) return;
     super.draw(ctx);
 
     // ⏱ Wenn blinkt → nur manchmal anzeigen
