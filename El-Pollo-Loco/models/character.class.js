@@ -146,6 +146,19 @@ class Character extends MovableObject {
 
       // 🎥 Kamera-Logik
       if (this.world) {
+
+        // 👉 NEU: Panning nach rechts erst starten, wenn Pepe über x = 4050 ist
+        if (
+          this.atEndboss &&
+          this.world.hasBodyguardDied &&                 // Bodyguard ist tot
+          this.world.shouldStartCameraPanBack &&         // wir haben "warte auf PanBack" vorgemerkt
+          !this.world.isCameraPanning &&                 // aktuell kein Panning
+          this.x >= 4000                                 // Pepe ist weit genug rechts
+        ) {
+          this.world.startEndbossCameraPanBack();
+          this.world.shouldStartCameraPanBack = false;   // nur einmal starten
+        }
+
         // 1️⃣ Weiches Panning aktiv?
         if (this.world.isCameraPanning && typeof this.world.cameraTargetX === 'number') {
           const target = this.world.cameraTargetX;
@@ -171,7 +184,6 @@ class Character extends MovableObject {
             }
           }
 
-          // 2️⃣ Im Endbossbereich, aber kein aktives Panning
         } else if (this.atEndboss) {
           // Wenn schon eine feste Endboss-Kameraposition existiert → diese nutzen
           if (typeof this.world.endbossCameraX === 'number') {
@@ -181,11 +193,12 @@ class Character extends MovableObject {
             this.world.camera_x = -4100 + 100; // = -4000
           }
 
-          // 3️⃣ Normaler Kamerafollow außerhalb des Endbossbereichs
         } else {
+          // 3️⃣ Normaler Kamerafollow außerhalb des Endbossbereichs
           this.world.camera_x = -this.x + 100;
         }
       }
+
 
       // 🧩 Knockback-Bewegung automatisch verarbeiten
       if (this.knockbackActive) {

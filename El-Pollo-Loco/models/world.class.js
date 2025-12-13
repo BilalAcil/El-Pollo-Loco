@@ -31,6 +31,7 @@ class World {
     this.cameraPanSpeed = 2;        // Geschwindigkeit des Pannings (je kleiner, desto langsamer)
     this.endbossCameraX = undefined; // final fixierte Kamera-Position im Endbossbereich
     this.hasBodyguardDied = false; // 👈 NEU: damit wir es nur einmal machen
+    this.shouldStartCameraPanBack = false; // 👈 NEU
 
     // 🔊 Kamera-Schiebe-Sound
     this.cameraMoveSound = new Audio('audio/push-stone.mp3');
@@ -745,10 +746,13 @@ class World {
 
   // Wird aufgerufen, wenn der Bodyguard stirbt
   onBodyguardDeath() {
-    if (this.hasBodyguardDied) return;  // nur einmal ausführen
+    if (this.hasBodyguardDied) return;   // nur einmal reagieren
     this.hasBodyguardDied = true;
-    this.startEndbossCameraPanBack();
+
+    // Noch NICHT direkt pannen, nur vormerken:
+    this.shouldStartCameraPanBack = true;
   }
+
 
 
   /**
