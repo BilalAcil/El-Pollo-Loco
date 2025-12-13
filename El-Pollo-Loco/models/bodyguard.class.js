@@ -174,7 +174,7 @@ class Bodyguard extends MovableObject {
       this.x += this.speedX;
 
       // 🔁 Normale Laufgrenzen
-      if (this.x <= 4000) {
+      if (this.x <= 3780) {
         this.speedX = 0;
         setTimeout(() => {
           this.otherDirection = true;
@@ -182,7 +182,7 @@ class Bodyguard extends MovableObject {
         }, 200);
       }
 
-      if (this.x >= 4570) {
+      if (this.x >= 4330) {
         this.speedX = 0;
         setTimeout(() => {
           this.otherDirection = false;
