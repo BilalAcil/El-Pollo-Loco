@@ -285,3 +285,42 @@ h3 {
   color: gold;
   text-shadow: 0 0 8px gold;
 }
+
+.legal-links {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+}
+
+.legal-links a {
+  color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* =============================== */
+/* 📜 Impressum & Datenschutz      */
+/* eigene, gut lesbare Schrift     */
+/* =============================== */
+
+body.legal-page {
+  font-family: Arial, system-ui, sans-serif;
+  /* andere Schrift nur für diese Seiten */
+  font-size: 16px;
+}
+
+/* Text in der Box linksbündig, Überschrift zentriert */
+body.legal-page .dialog-content {
+  text-align: left;
+}
+
+body.legal-page .dialog-content h3 {
+  text-align: center;
+}
+
+/* Bessere Lesbarkeit */
+body.legal-page p {
+  line-height: 1.5;
+}

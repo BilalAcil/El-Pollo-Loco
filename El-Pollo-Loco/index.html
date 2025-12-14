@@ -19,19 +19,21 @@
   <div id="start-screen" class="overlay">
     <div class="menu-box">
       <h2>Das Huhn wartet, Amigo. <br>Hol dir deine Maracas zurück!</h2>
-      <div class="menu-img">
-        <img src="img/13_menu-img/pepe-menu.png"></img>
-        <img src="img/13_menu-img/vs.png">
-        <div class="menu-img marakas-div">
-          <img class="boss" src="img/13_menu-img/boss-menu.png"></img>
-          <img class="marakas" src="img/14_maracas/maracas.png">
-        </div>
-      </div>
+      <!-- ... deine bisherigen Buttons ... -->
       <button id="start-btn" class="loading" disabled>Bitte warten...</button>
       <button onclick="openInstructions()">ℹ️ Anleitung</button>
       <button id="mute-btn" onclick="toggleMute()">🔊 Ton aus</button>
     </div>
+
+    <!-- 👇 NEU: Impressum-Link -->
+    <div class="legal-links">
+      <a href="impressum.html">Impressum</a>
+      &nbsp;|&nbsp;
+      <a href="datenschutz.html">Datenschutz</a>
+    </div>
+
   </div>
+
 
   <!-- ANLEITUNG -->
   <div id="instructions" class="dialog hidden">
