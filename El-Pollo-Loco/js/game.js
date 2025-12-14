@@ -32,7 +32,12 @@ function stopGame() {
 
 // === Tasteneingaben erfassen ===
 window.addEventListener('keydown', (e) => {
-  // 👉 Ohne Welt nichts machen
+  // 🎚️ Ton an/aus mit Taste „M“ (immer erlaubt, auch ohne World)
+  if ((e.key === 'm' || e.key === 'M') && !e.repeat) {
+    toggleMute();
+  }
+
+  // 👉 Ohne Welt nichts machen (für Bewegungen etc.)
   if (!world) return;
 
   // ⛔ Während Maracas-Endsequenz ALLE Eingaben ignorieren
@@ -56,6 +61,7 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
 
 window.addEventListener('keyup', (e) => {
   if (e.key === 'ArrowRight') keyboard.RIGHT = false;

@@ -9,6 +9,24 @@ let gameInitialized = false;
  */
 window.addEventListener("DOMContentLoaded", init);
 
+// 💾 Gespeicherten Mute-Status laden
+(function restoreMuteFromStorage() {
+  try {
+    const stored = localStorage.getItem('elPolloMute');
+    if (stored === '1') {
+      // direkt Mute aktivieren
+      applyMuteState(true);
+    } else {
+      // sicherheitshalber konsistent setzen
+      applyMuteState(false);
+    }
+  } catch (e) {
+    console.warn('Konnte Mute-Status nicht aus localStorage lesen:', e);
+    applyMuteState(false);
+  }
+})();
+
+
 /**
  * Initialisiert die Seite, aber startet das Spiel noch nicht.
  * Hier wird nur der Startbildschirm vorbereitet.
@@ -92,18 +110,46 @@ function closeInstructions() {
   document.getElementById('instructions').classList.add('hidden');
 }
 
+
+function applyMuteState(muted) {
+  // globale Variable updaten
+  isMuted = muted;
+
+  // Button-Text setzen
+  const btn = document.getElementById('mute-btn');
+  if (btn) {
+    btn.textContent = muted ? '🔈 Ton an' : '🔊 Ton aus';
+  }
+
+  // global alle Audio-Objekte muten / entmuten
+  if (typeof setGlobalMute === 'function') {
+    setGlobalMute(muted);
+  }
+
+  // optional den Zustand auch in der World merken
+  if (world) {
+    world.isMuted = muted;
+  }
+
+  // 💾 Zustand im Local Storage speichern
+  try {
+    localStorage.setItem('elPolloMute', muted ? '1' : '0');
+  } catch (e) {
+    console.warn('Konnte Mute-Status nicht in localStorage speichern:', e);
+  }
+}
+
+
+
 /**
  * Ton an/aus
  */
 function toggleMute() {
-  isMuted = !isMuted;
-  document.getElementById('mute-btn').textContent = isMuted ? '🔈 Ton an' : '🔊 Ton aus';
-
-  if (world) {
-    if (isMuted) world.muteAllSounds?.();
-    else world.unmuteAllSounds?.();
-  }
+  const newState = !isMuted;
+  applyMuteState(newState);
 }
+
+
 
 /**
  * Zeigt den Endscreen an (wird vom Spiel aufgerufen)
