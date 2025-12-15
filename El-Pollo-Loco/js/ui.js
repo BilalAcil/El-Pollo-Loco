@@ -319,6 +319,17 @@ function setupMobileControls() {
     return;
   }
 
+  // 👉 HIER: Kontextmenü & Textauswahl auf den Buttons deaktivieren
+  [btnLeft, btnRight, btnJump, btnThrow].forEach(btn => {
+    // Rechtsklick / Long-Press Kontextmenü verhindern
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // optional: keine Text-Selektion (falls Browser das zulässt)
+    btn.style.userSelect = 'none';
+    btn.style.webkitUserSelect = 'none';
+    btn.style.msUserSelect = 'none';
+  });
+
   /**
    * Hilfsfunktion: setzt ein bestimmtes Keyboard-Flag
    */

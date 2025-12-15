@@ -400,7 +400,13 @@ body.legal-page p {
   width: 60px;
   height: 60px;
   font-size: 1.4rem;
+
+  /* Optional: Komfort für Touch-Geräte */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
+
 
 /* Nur auf Handy/Tablet im QUERFORMAT zeigen – UND nur wenn aktiv */
 @media screen and (max-width: 1366px) and (orientation: landscape) {
