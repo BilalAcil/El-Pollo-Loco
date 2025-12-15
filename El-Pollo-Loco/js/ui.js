@@ -66,6 +66,19 @@ function startGame() {
   document.getElementById('canvas').style.display = 'block';
   document.getElementById('end-screen').classList.add('hidden');
 
+  // 📱 Mobile-Controls NUR auf kleinen Bildschirmen im Querformat aktivieren
+  const mobileControls = document.querySelector('.mobile-controls');
+  if (mobileControls) {
+    const isSmallScreen = window.innerWidth <= 1024;
+    const isLandscape = window.innerWidth > window.innerHeight;
+
+    if (isSmallScreen && isLandscape) {
+      mobileControls.classList.add('active');
+    } else {
+      mobileControls.classList.remove('active');
+    }
+  }
+
   setTimeout(() => {
     if (world) {
       // ✅ Ab jetzt dürfen Pause-/Play-Overlays erscheinen
@@ -79,6 +92,7 @@ function startGame() {
     }
   }, 200);
 }
+
 
 
 
