@@ -17,6 +17,13 @@ body {
   z-index: 0;
 }
 
+/* Globale Seite: nicht scrollen */
+html,
+body {
+  overflow: hidden;
+}
+
+
 body::before {
   content: "";
   position: absolute;
@@ -38,7 +45,24 @@ canvas {
   background-color: #000000;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 30px;
+
+  /* 🔽 Responsiv: immer im 3:2 Format (720x480) bleiben */
+  aspect-ratio: 3 / 2;
+
+  /* 🔽 Maximalgröße: Desktop bleibt bei 720px Breite / 480px Höhe */
+  max-width: 720px;
+  max-height: 480px;
+
+  /* 🔽 Auf kleineren Screens schrumpfen:
+     - max. 90% der Bildschirmbreite
+     - max. 90% der Bildschirmhöhe (über 1.5-Faktor)
+  */
+  width: min(90vw, 90vh * 1.5, 720px);
+
+  /* Höhe aus aspect-ratio automatisch berechnet, kein Scrollen nötig */
+  display: block;
 }
+
 
 h1 {
   margin: 10px;
@@ -323,4 +347,83 @@ body.legal-page .dialog-content h3 {
 /* Bessere Lesbarkeit */
 body.legal-page p {
   line-height: 1.5;
+}
+
+
+/* ================================ */
+/* 📱 Nur Querformat auf Mobile     */
+/* ================================ */
+
+/* Standard: Hinweis-Overlay ausblenden */
+#rotate-device-overlay {
+  display: none;
+  z-index: 30;
+  /* über allen anderen Overlays */
+}
+
+/* Auf kleineren Geräten im HOCHFORMAT anzeigen */
+@media screen and (max-width: 1024px) and (orientation: portrait) {
+  #rotate-device-overlay {
+    display: flex;
+    /* .overlay sorgt für Zentrierung etc. */
+  }
+
+  /* Spieloberflächen ausblenden, solange Hochformat aktiv ist */
+  #canvas,
+  #start-screen,
+  #end-screen,
+  #instructions {
+    display: none !important;
+  }
+}
+
+/* Auf kleineren Geräten im QUERFORMAT: Spiel sichtbar, Hinweis weg */
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  #rotate-device-overlay {
+    display: none;
+  }
+
+  /* Falls du willst, kannst du hier explizit wieder aktivieren,
+     aber eigentlich reicht dein bisheriges JS / HTML-Handling */
+}
+
+/* Basis: Mobile-Controls grundsätzlich verstecken */
+.mobile-controls {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  display: none;
+  justify-content: space-around;
+  gap: 12px;
+  z-index: 15;
+}
+
+/* Buttons darin dürfen ruhig etwas größer sein */
+.mobile-controls button {
+  background: rgba(255, 255, 255, 0.193);
+  margin: 0;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+}
+
+/* Nur auf Handy/Tablet im QUERFORMAT zeigen – UND nur wenn aktiv */
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  .mobile-controls.active {
+    display: flex;
+    justify-content: space-around;
+  }
+}
+
+.button-left {
+  display: flex;
+  gap: 20px;
+}
+
+/* 🔠 Überschrift "EL POLLO LOCO" auf kleineren Geräten ausblenden */
+@media screen and (max-width: 1024px) {
+  #game-name {
+    display: none !important;
+  }
 }

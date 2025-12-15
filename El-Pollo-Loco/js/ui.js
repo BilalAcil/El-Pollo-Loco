@@ -9,23 +9,6 @@ let gameInitialized = false;
  */
 window.addEventListener("DOMContentLoaded", init);
 
-// 💾 Gespeicherten Mute-Status laden
-(function restoreMuteFromStorage() {
-  try {
-    const stored = localStorage.getItem('elPolloMute');
-    if (stored === '1') {
-      // direkt Mute aktivieren
-      applyMuteState(true);
-    } else {
-      // sicherheitshalber konsistent setzen
-      applyMuteState(false);
-    }
-  } catch (e) {
-    console.warn('Konnte Mute-Status nicht aus localStorage lesen:', e);
-    applyMuteState(false);
-  }
-})();
-
 
 /**
  * Initialisiert die Seite, aber startet das Spiel noch nicht.

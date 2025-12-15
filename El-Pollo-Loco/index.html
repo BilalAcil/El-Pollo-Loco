@@ -15,8 +15,21 @@
   <h1 id="game-name">EL POLLO LOCO</h1>
   <canvas id="canvas" width="720" height="480"></canvas>
 
+  <div class="mobile-controls">
+    <div class="button-left">
+      <button id="btn-left">⬅</button>
+      <button id="btn-jump">⏫</button>
+      <button id="btn-throw">🌶️</button>
+    </div>
+    <div>
+      <button id="btn-right">➡</button>
+    </div>
+  </div>
+
+
   <!-- STARTSCREEN -->
   <div id="start-screen" class="overlay">
+    <h1>EL POLLO LOCO</h1>
     <div class="menu-box">
       <h2>Das Huhn wartet, Amigo. <br>Hol dir deine Maracas zurück!</h2>
       <!-- ... deine bisherigen Buttons ... -->
@@ -73,6 +86,15 @@
 
       <button onclick="restartGame()"></button>
       <button onclick="returnToHome()"></button>
+    </div>
+  </div>
+
+
+  <!-- 📱 Gerät drehen Hinweis -->
+  <div id="rotate-device-overlay" class="overlay">
+    <div class="menu-box">
+      <h2>Turn your device to play</h2>
+      <p>Bitte drehe dein Gerät ins Querformat, um El Pollo Loco zu spielen.</p>
     </div>
   </div>
 
