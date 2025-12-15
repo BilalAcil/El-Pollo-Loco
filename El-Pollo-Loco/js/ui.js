@@ -69,7 +69,7 @@ function startGame() {
   // 📱 Mobile-Controls NUR auf kleinen Bildschirmen im Querformat aktivieren
   const mobileControls = document.querySelector('.mobile-controls');
   if (mobileControls) {
-    const isSmallScreen = window.innerWidth <= 1024;
+    const isSmallScreen = window.innerWidth <= 1366;
     const isLandscape = window.innerWidth > window.innerHeight;
 
     if (isSmallScreen && isLandscape) {
@@ -305,11 +305,77 @@ function returnToHome() {
 }
 
 
+/**
+ * Mobile-Touch-Buttons mit der Keyboard-Steuerung verbinden
+ */
+function setupMobileControls() {
+  const btnLeft = document.getElementById('btn-left');
+  const btnRight = document.getElementById('btn-right');
+  const btnJump = document.getElementById('btn-jump');
+  const btnThrow = document.getElementById('btn-throw');
+
+  // Falls wir z.B. am Desktop oder im HTML noch keine Buttons haben → einfach abbrechen
+  if (!btnLeft || !btnRight || !btnJump || !btnThrow) {
+    return;
+  }
+
+  /**
+   * Hilfsfunktion: setzt ein bestimmtes Keyboard-Flag
+   */
+  const pressKey = (keyName) => {
+    if (!keyboard) return;
+    keyboard[keyName] = true;
+  };
+
+  const releaseKey = (keyName) => {
+    if (!keyboard) return;
+    keyboard[keyName] = false;
+  };
+
+  /**
+   * Pointer-Events für ein Button-Element registrieren
+   * keyName ist z.B. "LEFT", "RIGHT", "SPACE", "D"
+   */
+  const bindButtonToKey = (button, keyName) => {
+    // gedrückt halten = Bewegung dauerhaft
+    button.addEventListener('pointerdown', (e) => {
+      e.preventDefault();          // verhindert ungewolltes Scrollen / Fokus
+      pressKey(keyName);
+    });
+
+    // loslassen → Bewegung stoppen
+    button.addEventListener('pointerup', (e) => {
+      e.preventDefault();
+      releaseKey(keyName);
+    });
+
+    // Finger vom Button runterziehen → auch stoppen
+    button.addEventListener('pointerleave', () => {
+      releaseKey(keyName);
+    });
+
+    button.addEventListener('pointercancel', () => {
+      releaseKey(keyName);
+    });
+  };
+
+  // Zuordnungen
+  bindButtonToKey(btnLeft, 'LEFT');
+  bindButtonToKey(btnRight, 'RIGHT');
+  bindButtonToKey(btnJump, 'SPACE');
+  bindButtonToKey(btnThrow, 'D');
+}
+
+
+
 
 /**
  * Warten, bis Browser + Spiel intern vollständig geladen sind
  */
 window.addEventListener('load', async () => {
+  // 📱 Mobile-Touch-Buttons mit Keyboard koppeln
+  setupMobileControls();
+
   // 🔥 Welt + alle Objekte (Pepe, Statusbars, Coins, etc.) ERZEUGEN
   preloadWorld();
 
@@ -324,6 +390,7 @@ window.addEventListener('load', async () => {
     startBtn.onclick = startGame;
   }
 });
+
 
 
 

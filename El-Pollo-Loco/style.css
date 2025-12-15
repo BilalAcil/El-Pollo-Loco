@@ -247,9 +247,7 @@ h3 {
   }
 }
 
-/* ========================= */
-/* 🏁 ENDSCREEN ANPASSUNGEN  */
-/* ========================= */
+
 #end-screen {
   background: rgba(0, 0, 0, 0.85);
   /* etwas dunkler als Startscreen */
@@ -324,10 +322,6 @@ h3 {
   cursor: pointer;
 }
 
-/* =============================== */
-/* 📜 Impressum & Datenschutz      */
-/* eigene, gut lesbare Schrift     */
-/* =============================== */
 
 body.legal-page {
   font-family: Arial, system-ui, sans-serif;
@@ -409,7 +403,7 @@ body.legal-page p {
 }
 
 /* Nur auf Handy/Tablet im QUERFORMAT zeigen – UND nur wenn aktiv */
-@media screen and (max-width: 1024px) and (orientation: landscape) {
+@media screen and (max-width: 1366px) and (orientation: landscape) {
   .mobile-controls.active {
     display: flex;
     justify-content: space-around;
