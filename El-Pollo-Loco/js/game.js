@@ -1,22 +1,3 @@
-// === Globale Variablen ===
-var canvas;
-var world;
-var keyboard = new Keyboard();
-
-/**
- * Wird beim Laden der Seite aufgerufen,
- * aber startet das Spiel noch nicht.
- */
-function init() {
-  canvas = document.getElementById('canvas');
-  if (!canvas) {
-    console.error("❌ Canvas nicht gefunden!");
-    return;
-  }
-
-  console.log("✅ Canvas gefunden:", canvas);
-}
-
 /**
  * Wird von ui.js aufgerufen, wenn der Spieler „Start“ klickt
  */
@@ -24,11 +5,18 @@ function startGameLogic() {
   canvas = document.getElementById('canvas');
   world = new World(canvas, keyboard);
 
-  canvas.onclick = () => {   // ersetzt alten Listener automatisch!
+  // 🖱️ Klick auf Canvas = Pause/Play Toggle
+  canvas.onclick = () => {
     if (!world) return;
-    world.isPaused ? world.resumeGame() : world.pauseGame();
+
+    // ⛔ Während Maracas-Sequenz keine Pause
+    if (world.isMaracasSequence) return;
+
+    if (world.isPaused) world.resumeGame();
+    else world.pauseGame();
   };
 }
+
 
 
 /**
@@ -44,6 +32,19 @@ function stopGame() {
 
 // === Tasteneingaben erfassen ===
 window.addEventListener('keydown', (e) => {
+  // 🎚️ Ton an/aus mit Taste „M“ (immer erlaubt, auch ohne World)
+  if ((e.key === 'm' || e.key === 'M') && !e.repeat) {
+    toggleMute();
+  }
+
+  // 👉 Ohne Welt nichts machen (für Bewegungen etc.)
+  if (!world) return;
+
+  // ⛔ Während Maracas-Endsequenz ALLE Eingaben ignorieren
+  if (world.isMaracasSequence) {
+    return;
+  }
+
   if (e.key === 'ArrowRight') keyboard.RIGHT = true;
   if (e.key === 'ArrowLeft') keyboard.LEFT = true;
   if (e.key === 'ArrowUp') keyboard.UP = true;
@@ -51,10 +52,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === ' ') keyboard.SPACE = true;
   if (e.key === 'd' || e.key === 'D') keyboard.D = true;
 
-  // 🧩 NEU: Pause/Play mit Taste „P“
+  // 🧩 Pause/Play mit Taste „P“
   if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
-    if (!world) return;
-
     if (world.isPaused) {
       world.resumeGame();   // ▶️ fortsetzen
     } else {
@@ -62,6 +61,7 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
 
 window.addEventListener('keyup', (e) => {
   if (e.key === 'ArrowRight') keyboard.RIGHT = false;
@@ -71,3 +71,4 @@ window.addEventListener('keyup', (e) => {
   if (e.key === ' ') keyboard.SPACE = false;
   if (e.key === 'd' || e.key === 'D') keyboard.D = false;
 });
+

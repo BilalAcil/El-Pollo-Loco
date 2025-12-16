@@ -9,10 +9,11 @@ class World {
   statusBar = new StatusBar(); // Assuming StatusBar is defined elsewhere
   statusBarSalsa = new StatusBarSalsa(); // Assuming StatusBarSalsa is defined elsewhere
   statusBarCoin = new StatusBarCoin(); // Assuming StatusBarCoin is defined elsewhere
+  bodyguardStatus = null; // Wird erstellt, wenn Bodyguard erscheint
   maracas = null; // Noch nicht sichtbar, wird erst nach Boss-Tod erzeugt
-  bodyguard = new Bodyguard(); // Neuer Bodyguard
   corncob = new Corncob();
   chickenNest = new ChickenNest();
+  bodyguard = new Bodyguard();
   coins = []; // mehrere Münzen statt einer
   salsas = []; // mehrere Salsaflaschen
   throwableObjects = [];
@@ -22,10 +23,26 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
     this.keyboard = keyboard;
+    this.allowPauseOverlay = false;
+
+    // 🎥 Kamera-Steuerung für Endbossbereich
+    this.isCameraPanning = false;   // ob gerade weich verschoben wird
+    this.cameraTargetX = null;      // Zielwert von camera_x
+    this.cameraPanSpeed = 2;        // Geschwindigkeit des Pannings (je kleiner, desto langsamer)
+    this.endbossCameraX = undefined; // final fixierte Kamera-Position im Endbossbereich
+    this.hasBodyguardDied = false; // 👈 NEU: damit wir es nur einmal machen
+    this.shouldStartCameraPanBack = false; // 👈 NEU
+
+    // 🔊 Kamera-Schiebe-Sound
+    this.cameraMoveSound = new Audio('audio/push-stone.mp3');
+    this.cameraMoveSound.volume = 0.4;  // nach Geschmack anpassen
+    this.cameraMoveSound.loop = true;   // soll während des Schiebens durchlaufen
+    this.cameraMoveSound.load();
 
     // Welt zeichnen und initialisieren
     this.draw();
     this.setWorld();
+    this.bodyguard.world = this; // Bodyguard kennt jetzt die Welt
     this.countdown.world = this; // Countdown kennt jetzt die Welt
     this.checkCollisions();
     this.lastEnemyHit = 0;
@@ -55,26 +72,26 @@ class World {
     // ▶️ Play-Symbol zeigen (damit sichtbar ist, dass man starten kann)
     this.showPlaySymbol();
 
-    console.log("🧊 Welt erstellt – startet pausiert.");
+    this.isMaracasSequence = false; // 👈 Neues Flag
   }
 
 
   setWorld() {
     this.character.world = this;
-    this.bodyguard.world = this;
     this.coins = this.generateCoins();
     this.salsas = this.generateSalsas();
 
-    // 🆕 CHICKENS NEU ERSTELLEN!
     const chickens = this.generateChickens();
 
-    //  Restliche Gegner (z.B. Endboss) aus Level übernehmen:
+    //  Restliche Gegner (z.B. Endboss) + Bodyguard übernehmen:
     this.level.enemies = [
-      ...chickens,                        // 🐔 erst neue Chickens
-      ...this.level.enemies.filter(e => e instanceof Endboss || e instanceof EndBossStatusBar) // dann Endboss
+      ...chickens,                                                // 🐔 Chickens
+      this.bodyguard,                                             // 🛡️ Bodyguard HINZUFÜGEN
+      ...this.level.enemies.filter(e =>
+        e instanceof Endboss || e instanceof EndBossStatusBar
+      )                                                           // 🦹‍♂️ Endboss + HP-Bar
     ];
 
-    // Endboss & Statusbar neu verknüpfen
     this.endboss = this.level.enemies.find(e => e instanceof Endboss);
     this.endbossBar = this.level.enemies.find(e => e instanceof EndBossStatusBar);
 
@@ -89,6 +106,7 @@ class World {
       this.endbossBar.setPercentage(100);
     }
   }
+
 
 
   generateChickens() {
@@ -106,8 +124,6 @@ class World {
   }
 
 
-
-
   checkCollisions() {
     this.collisionInterval = setInterval(() => {
       if (this.isPaused) return; // während Pause nichts prüfen
@@ -115,6 +131,7 @@ class World {
       let characterHitEndbossFromAbove = false;
 
       this.level.enemies.forEach((enemy, index) => {
+
         // 🟥 FALL 1: Endboss
         if (enemy instanceof Endboss) {
           if (this.character.isColliding(enemy)) {
@@ -139,34 +156,101 @@ class World {
               }
 
               // Rückstoß nach links
-              this.character.speedY = 20;       // nach oben schleudern
-              this.character.speedX = -15;      // Stoß nach links
-              this.character.knockbackActive = true; // aktiviert Bewegung
-
+              this.character.speedY = 20;
+              this.character.speedX = -15;
+              this.character.knockbackActive = true;
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
-                console.log("💀 Endboss besiegt – startet Todesanimation");
 
                 if (enemy.onDeath) {
                   enemy.onDeath();
                 }
 
-                // 💥 Todesfall startet langsames Fallen
                 enemy.startFallingWhenDead();
               }
+            }
+          }
+        }
 
+        // 🟦 FALL 2: BODYGUARD
+        else if (enemy instanceof Bodyguard) {
+          if (this.character.isColliding(enemy) && !enemy.isDead) {
+
+            const characterBottom = this.character.y + this.character.height;
+            const enemyTop = enemy.y;
+            const enemyMiddle = enemy.y + enemy.height / 2;
+
+            const hitFromAbove =
+              this.character.isAboveGround() &&
+              this.character.speedY < 0 &&
+              characterBottom < enemyMiddle &&
+              characterBottom > enemyTop - 15;
+
+            // 🟢 VON OBEN → Bodyguard bekommt Schaden
+            if (hitFromAbove) {
+              enemy.hit();
+
+              // 🔄 Zufälliger Rückstoß (links/rechts)
+              const randomDirection = Math.random() < 0.5 ? -1 : 1;
+
+              // 🟢 Sanfter Rückstoß als beim Endboss
+              this.character.speedY = 18;
+              this.character.speedX = 10 * randomDirection;
+              this.character.knockbackActive = true;
+
+              // 🚧 X-Grenzen an aktuelle Kamera/Viewport anpassen
+              setTimeout(() => {
+                // Sichtbarer Bereich im Welt-Koordinatensystem
+                const viewLeft = -this.camera_x;
+                const viewRight = -this.camera_x + this.canvas.width;
+
+                // Kleiner Rand, damit Pepe nicht genau am Bildrand klebt
+                const margin = 30;
+
+                const minX = viewLeft + margin;
+                const maxX = viewRight - this.character.width - margin;
+
+                if (this.character.x < minX) this.character.x = minX;
+                if (this.character.x > maxX) this.character.x = maxX;
+              }, 20);
+
+
+              return; // verhindert Mehrfachkollision
+            }
+
+
+            // 🔴 SEITLICH → Spieler bekommt Schaden MIT COOLDOWN
+            const now = Date.now();
+            if (!this.lastBodyguardHit || now - this.lastBodyguardHit > 1000) {
+
+              this.lastBodyguardHit = now; // COOLDOWN aktivieren!
+
+              this.character.hit(); // -=20%
+              this.statusBar.setPercentage(this.character.energy);
+
+              if (this.character.energy <= 0) {
+                // Spieler stirbt nur EINMAL – nicht mehrfach!
+                this.character.isDead = true;
+                this.statusBar.setPercentage(0);
+                this.character.playDeathAnimation();
+                this.character.startFallingWhenDead();
+                this.endGame(false);
+              }
             }
 
           }
+        }
 
-          // 🟨 FALL 2: Normale Gegner (Chicken usw.) - AUSSCHLIESSEN von StatusBars und anderen Objekten
-        } else {
+
+        // 🟨 FALL 3: andere Gegner (Chicken usw.)
+        else {
           if (this.isActualEnemy(enemy) && this.character.isColliding(enemy) && !enemy.isDead) {
             collidedEnemies.push({ enemy, index });
           }
         }
-      });
+
+      }); // forEach ENDE
 
       // 🔥 VERBESSERTE Logik für normale Gegner
       let characterJumpedOnEnemy = false;
@@ -279,7 +363,7 @@ class World {
       }
 
 
-      // 💥 Salsa-Flaschen treffen Gegner (Endboss, Chicken, Küken)
+      // 💥 Salsa-Flaschen treffen Gegner (Endboss, Bodyguard, Chicken, Küken)
       this.throwableObjects.forEach((salsa, index) => {
         this.level.enemies.forEach((enemy) => {
           if (
@@ -300,6 +384,12 @@ class World {
               this.throwableObjects.splice(index, 1);
             });
 
+            // 🆕 BODYGUARD-SCHADEN
+            if (enemy instanceof Bodyguard) {
+              enemy.hit();  // Dabei wird das Leben automatisch abgezogen!
+              return;
+            }
+
             // 🧩 Je nach Gegnertyp unterschiedlich reagieren
             if (enemy instanceof Endboss) {
               // 🦹‍♂️ Endboss verliert Energie
@@ -312,7 +402,6 @@ class World {
 
               if (enemy.energy <= 0 && !enemy.isDead) {
                 enemy.isDead = true;
-                console.log("💀 Endboss besiegt – startet Todesanimation");
 
                 if (enemy.onDeath) {
                   enemy.onDeath();
@@ -405,6 +494,9 @@ class World {
 
       // 🎵 Maracas-Kollision
       if (this.maracas && this.character.isColliding(this.maracas)) {
+
+        this.isMaracasSequence = true;  // 👈 Ab hier: Endsequenz läuft
+
         // Maracas verschwindet
         this.maracas = null;
 
@@ -531,10 +623,14 @@ class World {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.coins); // 💰 alle Münzen anzeigen
     this.addObjectsToMap(this.salsas);
-    this.addToMap(this.bodyguard); // Neuer Bodyguard
+    this.addToMap(this.bodyguard);
     this.addToMap(this.chickenNest);
     if (this.maracas) {
       this.addToMap(this.maracas);
+    }
+
+    if (this.bodyguardStatus) {
+      this.addToMap(this.bodyguardStatus);
     }
 
     if (this.corncob) {
@@ -557,59 +653,113 @@ class World {
  * (z. B. wenn Pepe stirbt).
  */
   pauseAllMovements() {
-    console.log("⏸️ Welt wird eingefroren...");
-
     // 🟦 Clouds
-    this.level.clouds.forEach(c => {
-      if (c.moveInterval) clearInterval(c.moveInterval);
-    });
+    this.level.clouds.forEach(c => clearInterval(c.moveInterval));
 
-    // 🟥 Gegner (Chicken, ChickenSmall, Endboss)
+    // 🟥 Gegner
     this.level.enemies.forEach(e => {
       if (e.moveInterval) clearInterval(e.moveInterval);
       if (e.animationInterval) clearInterval(e.animationInterval);
       if (e.fallInterval) clearInterval(e.fallInterval);
     });
 
-    // 🟨 Kollisionsprüfungen
-    if (this.collisionInterval) {
-      clearInterval(this.collisionInterval);
-      this.collisionInterval = null;
+    // 🧍 Bodyguard pausieren
+    if (this.bodyguard) {
+      this.bodyguard.pause();
     }
 
-    // 🟩 Tasteneingaben deaktivieren (optional, verhindert Kamera-Bewegung)
-    this.keyboard.RIGHT = false;
-    this.keyboard.LEFT = false;
-    this.keyboard.UP = false;
-    this.keyboard.DOWN = false;
-    this.keyboard.SPACE = false;
-    this.keyboard.D = false;
+    // 🟥 Kollisionen
+    clearInterval(this.collisionInterval);
 
-    // 🧊 Flag
+    // 🟩 Keyboard deaktivieren
+    Object.keys(this.keyboard).forEach(key => this.keyboard[key] = false);
+
     this.isPaused = true;
   }
 
-
-
-  /**
-   * Setzt die Bewegungen wieder fort (optional, für Restart).
-   */
   resumeAllMovements() {
-    console.log("▶️ Welt läuft wieder...");
     this.isPaused = false;
 
-    // Wolken, Gegner etc. starten ihre animate()-Methoden erneut
     this.level.clouds.forEach(c => c.animate());
     this.level.enemies.forEach(e => e.animate && e.animate());
-    this.checkCollisions(); // reaktiviert die Kollisionen
+
+    // 🧍 Bodyguard wieder aktivieren
+    if (this.bodyguard) {
+      this.bodyguard.resume();
+    }
+
+    this.checkCollisions();
   }
+
+
+  // 🎥 Weiches Kamera-Panning im Endbossbereich (4000–4600 → 3850–4450)
+  startEndbossCameraPan() {
+    // Wenn schon gepannt wird oder schon auf der Zielposition → nichts tun
+    if (this.isCameraPanning || this.endbossCameraX === -3770) return;
+
+    // Zielkamera-Wert:
+    // Aktuell: camera_x = -4000  → sichtbarer Bereich: 4000–4600
+    // Ziel:    camera_x = -3850  → sichtbarer Bereich: 3770–4370
+    this.cameraTargetX = -3770;
+    this.cameraPanSpeed = 2;      // kannst du anpassen (1 = sehr langsam, 3 = schneller)
+    this.isCameraPanning = true;
+
+    // 🔊 Sound starten
+    this.playCameraMoveSound();
+  }
+
+
+  playCameraMoveSound() {
+    if (!this.cameraMoveSound) return;
+    try {
+      this.cameraMoveSound.currentTime = 0;
+      this.cameraMoveSound.play();
+    } catch (e) {
+      console.warn('Kamera-Sound konnte nicht abgespielt werden:', e);
+    }
+  }
+
+  stopCameraMoveSound() {
+    if (!this.cameraMoveSound) return;
+    try {
+      this.cameraMoveSound.pause();
+      this.cameraMoveSound.currentTime = 0;
+    } catch (e) {
+      console.warn('Kamera-Sound konnte nicht gestoppt werden:', e);
+    }
+  }
+
+
+
+  // 🎥 Kamera wieder in ursprüngliche Endboss-Position (4000–4600) fahren
+  startEndbossCameraPanBack() {
+    if (this.isCameraPanning) return; // nicht doppelt
+    // ursprüngliche Endboss-Kameraposition:
+    // camera_x = -4100 + 100 = -4000
+    this.cameraTargetX = -4100 + 100;  // = -4000
+    this.cameraPanSpeed = 2;           // ggf. anpassen (1 langsamer, 3 schneller)
+    this.isCameraPanning = true;
+
+    // 🔊 Sound starten
+    this.playCameraMoveSound();
+  }
+
+  // Wird aufgerufen, wenn der Bodyguard stirbt
+  onBodyguardDeath() {
+    if (this.hasBodyguardDied) return;   // nur einmal reagieren
+    this.hasBodyguardDied = true;
+
+    // Noch NICHT direkt pannen, nur vormerken:
+    this.shouldStartCameraPanBack = true;
+  }
+
+
 
   /**
    * Stoppt das Spiel komplett (z. B. bei Game Over).
    */
   stop() {
     this.pauseAllMovements();
-    console.log("🛑 Spiel gestoppt.");
   }
 
 
@@ -694,29 +844,41 @@ class World {
   }
 
   // 🧩 SPIEL PAUSIEREN
-  pauseGame() {
-    if (this.isPaused || (this.world && this.world.isPaused)) return;
+  pauseGame(showOverlay = true) {
+    // ⛔ Während Bodyguard-Sprung ODER Endboss-Tod keine Pause zulassen
+    if (
+      (this.bodyguard && this.bodyguard.isJumping) ||                 // Bodyguard springt runter
+      (this.character && this.character.freezeForBodyguard) ||        // Spieler ist für Bodyguard gesperrt
+      (this.endboss && this.endboss.isDead) ||
+      this.isMaracasSequence                     // 👈 NEU
+    ) {
+      return;
+    }
+
+    if (this.isPaused) return;
 
     this.isPaused = true;
 
-    // Bewegungen & Animationen anhalten
     this.pauseAllMovements();
 
-    // Pepe & Endboss pausieren
     if (this.character) this.character.pause();
     if (this.endboss) this.endboss.pause();
     if (this.bodyguard) this.bodyguard.pause();
 
-    // ⏸ Musik und Countdown
     if (this.countdown) {
       this.countdown.pauseAllMusic();
-      this.countdown.pauseCountdown();   // ⏸ Countdown anhalten
+      this.countdown.pauseCountdown();
     }
 
-    // Pause-Symbol + Play-Symbol
-    this.showPauseThenPlaySymbol();
-    console.log("⏸️ Spiel pausiert");
+    if (showOverlay && this.allowPauseOverlay) {
+      this.showPauseThenPlaySymbol();
+    }
   }
+
+
+
+
+
 
   // 🧩 SPIEL FORTSETZEN
   resumeGame() {
@@ -758,7 +920,6 @@ class World {
     // Pepe & Endboss fortsetzen
     if (this.character) this.character.resume();
     if (this.endboss) this.endboss.resume();
-    if (this.bodyguard) this.bodyguard.resume();
 
     // ▶️ Musik und Countdown fortsetzen
     if (this.countdown) {
@@ -769,7 +930,6 @@ class World {
 
     // Play-Symbol ausblenden
     this.hidePlaySymbol();
-    console.log("▶️ Spiel fortgesetzt");
   }
 
 
@@ -790,6 +950,13 @@ class World {
 
   // 🧩 ZEIGE PAUSE, DANN PLAY SYMBOL
   showPauseThenPlaySymbol() {
+
+    // ❌ Wenn Startscreen sichtbar ist → GAR NICHTS anzeigen
+    const startScreen = document.getElementById('start-screen');
+    if (startScreen && !startScreen.classList.contains('hidden')) {
+      return;
+    }
+
     // Erst Pause-Symbol kurz anzeigen
     const pauseOverlay = document.createElement("div");
     pauseOverlay.innerHTML = "⏸";
@@ -821,6 +988,13 @@ class World {
 
   // 🧩 DAUERHAFTES PLAY-SYMBOL ZEIGEN
   showPlaySymbol() {
+
+    // ❌ Wenn Startscreen sichtbar ist → NICHT anzeigen
+    const startScreen = document.getElementById('start-screen');
+    if (startScreen && !startScreen.classList.contains('hidden')) {
+      return;
+    }
+
     // Wenn schon vorhanden → nicht doppelt anzeigen
     if (document.getElementById("play-overlay")) return;
 
@@ -847,5 +1021,68 @@ class World {
   hidePlaySymbol() {
     const overlay = document.getElementById("play-overlay");
     if (overlay) overlay.remove();
+  }
+
+
+
+  // ⚡ ALLE Figuren kurz hüpfen lassen (Bodyguard landet)
+  jumpFromShock() {
+    // 🧍 Pepe
+    if (this.character) {
+      let bounce = 0;
+      const bounceInterval = setInterval(() => {
+        this.character.y -= 2;
+        bounce++;
+        if (bounce >= 4) {
+          clearInterval(bounceInterval);
+          this.character.y += 8;
+        }
+      }, 30);
+    }
+
+    // 🐔 Endboss Bounce-Effekt
+    if (this.level && this.level.enemies) {
+      this.level.enemies.forEach(enemy => {
+        if (enemy instanceof Endboss) {
+          enemy.playAnimation(enemy.IMAGES_HURT);
+
+          let originalY = enemy.y;
+          let bounce = 0;
+          const bounceInterval = setInterval(() => {
+            enemy.y -= 3;
+            bounce++;
+            if (bounce >= 4) {
+              clearInterval(bounceInterval);
+              enemy.y = originalY;
+            }
+          }, 30);
+        }
+      });
+    }
+
+    // 🪺 Chicken-Nest
+    if (this.chickenNest) {
+      const originalY = this.chickenNest.y;
+      this.chickenNest.y -= 10;
+      setTimeout(() => {
+        this.chickenNest.y = originalY;
+      }, 150);
+    }
+
+    // 🌽 Corncob → Bounce statt echter Sprung
+    if (this.corncob) {
+      let originalY = this.corncob.y;
+      let bounce = 0;
+      const bounceInterval = setInterval(() => {
+        this.corncob.y -= 2;
+        bounce++;
+        if (bounce >= 4) {
+          clearInterval(bounceInterval);
+          this.corncob.y = originalY;
+        }
+      }, 30);
+    }
+    // 🎥 NACH dem Sprung: Kamera langsam nach links verschieben
+    this.startEndbossCameraPan();
   }
 }

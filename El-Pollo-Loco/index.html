@@ -15,23 +15,38 @@
   <h1 id="game-name">EL POLLO LOCO</h1>
   <canvas id="canvas" width="720" height="480"></canvas>
 
+  <div class="mobile-controls">
+    <div class="button-left">
+      <button id="btn-left">⬅</button>
+      <button id="btn-jump">⏫</button>
+      <button id="btn-throw">🌶️</button>
+    </div>
+    <div>
+      <button id="btn-right">➡</button>
+    </div>
+  </div>
+
+
   <!-- STARTSCREEN -->
   <div id="start-screen" class="overlay">
+    <h1>EL POLLO LOCO</h1>
     <div class="menu-box">
       <h2>Das Huhn wartet, Amigo. <br>Hol dir deine Maracas zurück!</h2>
-      <div class="menu-img">
-        <img src="img/13_menu-img/pepe-menu.png"></img>
-        <img src="img/13_menu-img/vs.png">
-        <div class="menu-img marakas-div">
-          <img class="boss" src="img/13_menu-img/boss-menu.png"></img>
-          <img class="marakas" src="img/14_maracas/maracas.png">
-        </div>
-      </div>
+      <!-- ... deine bisherigen Buttons ... -->
       <button id="start-btn" class="loading" disabled>Bitte warten...</button>
       <button onclick="openInstructions()">ℹ️ Anleitung</button>
       <button id="mute-btn" onclick="toggleMute()">🔊 Ton aus</button>
     </div>
+
+    <!-- 👇 NEU: Impressum-Link -->
+    <div class="legal-links">
+      <a href="impressum.html">Impressum</a>
+      &nbsp;|&nbsp;
+      <a href="datenschutz.html">Datenschutz</a>
+    </div>
+
   </div>
+
 
   <!-- ANLEITUNG -->
   <div id="instructions" class="dialog hidden">
@@ -75,6 +90,18 @@
   </div>
 
 
+  <!-- 📱 Gerät drehen Hinweis -->
+  <div id="rotate-device-overlay" class="overlay">
+    <div class="menu-box">
+      <h2>Turn your device to play</h2>
+      <p>Bitte drehe dein Gerät ins Querformat, um El Pollo Loco zu spielen.</p>
+    </div>
+  </div>
+
+
+  <!-- GANZ OBEN vor allen Klassen einfügen -->
+  <script src="./js/audio-manager.js"></script>
+
   <!-- Basis-Klassen -->
   <script src="./models/drawable-object.class.js"></script>
   <script src="./models/movable-opject.class.js"></script>
@@ -98,6 +125,7 @@
   <script src="./models/maracas.class.js"></script>
   <script src="./models/endboss.class.js"></script>
   <script src="./models/bodyguard.class.js"></script>
+  <script src="./models/bodyguard-statusbar.class.js"></script>
 
   <!-- Level und World -->
   <script src="./models/level.class.js"></script>

@@ -2,11 +2,10 @@ class SalsaThrow extends MovableObject {
   width = 50;
   height = 50;
 
-  // Startwerte (du kannst hiermit spielen)
-  speedX = 8;         // horizontale Geschwindigkeit (weiter = schneller)
-  speedY = 10;         // Anfangsbewegung nach oben
-  acceleration = 0.45;  // "Gravitation" (größer = fällt schneller)
-  direction;           // true = links, false = rechts
+  speedX = 8;
+  speedY = 10;
+  acceleration = 0.45;
+  direction;
   hasHit = false;
 
   IMAGES_ROTATION = [
@@ -35,6 +34,9 @@ class SalsaThrow extends MovableObject {
     this.rotationSound = new Audio('audio/throw-sound-2.mp3');
     this.rotationSound.volume = 0.4;
 
+    this.hitSound = new Audio('audio/hit-sound.mp3');
+    this.hitSound.volume = 0.5;
+
     this.throw();
   }
 
@@ -43,26 +45,30 @@ class SalsaThrow extends MovableObject {
     this.rotationSound.currentTime = 0;
     this.rotationSound.play().catch(e => console.warn('Rotation sound error:', e));
 
-    // Bewegung über Intervall
     this.moveInterval = setInterval(() => {
-      // Bewegung in X-Richtung (links/rechts)
+      // Bewegung X
       if (this.direction) {
         this.x -= this.speedX;
       } else {
         this.x += this.speedX;
       }
-      this.speedX *= 0.99; // leichte Verlangsamung pro Frame
+      this.speedX *= 0.99;
 
+      // Bewegung Y
+      this.y -= this.speedY;
+      this.speedY -= this.acceleration;
 
-      // Bewegung in Y-Richtung (parabolisch)
-      this.y -= this.speedY;       // nach oben
-      this.speedY -= this.acceleration; // Schwerkraft zieht nach unten
-
-      // optional: Stoppe Wurf, wenn Flasche "auf Boden" fällt
-      if (this.y >= 380 && !this.hasHit) {  // <--- Bodenhöhe anpassen
+      // --- 🟤 BODENKONTAKT ---
+      if (this.y >= 380 && !this.hasHit) {
         this.hasHit = true;
+
+        // 🎵 Bodentreffer-Sound
+        this.hitSound.currentTime = 0;
+        this.hitSound.play().catch(e => console.warn('Hit sound error:', e));
+
         this.splashAnimation();
       }
+
     }, 25);
 
     // Dreh-Animation
@@ -78,11 +84,12 @@ class SalsaThrow extends MovableObject {
     }
   }
 
-  /** 💥 Splash-Animation (bei Aufprall) **/
+  /** 💥 Splash-Animation **/
   splashAnimation(callback) {
     this.stopSound();
     clearInterval(this.moveInterval);
     clearInterval(this.rotationInterval);
+
     this.speedY = 0;
     this.speedX = 0;
 
@@ -91,20 +98,16 @@ class SalsaThrow extends MovableObject {
       this.loadImage(this.IMAGES_SPLASH[i]);
       i++;
 
-      // Wenn das letzte Splash-Bild angezeigt wurde:
       if (i >= this.IMAGES_SPLASH.length) {
         clearInterval(interval);
 
-        // ⏳ Kurze Verzögerung, damit das letzte Splash-Bild sichtbar bleibt
         setTimeout(() => {
-          // 🔥 Danach: Flasche verschwinden lassen
-          this.loadImage('');  // entfernt das Bild komplett
+          this.loadImage('');
           this.width = 0;
           this.height = 0;
 
-          // Optional: Objekt komplett entfernen, wenn du eine Callback-Logik nutzt
           if (callback) callback();
-        }, 200); // 200ms = kurzes Nachleuchten des letzten Splash-Bildes
+        }, 200);
       }
     }, 100);
   }

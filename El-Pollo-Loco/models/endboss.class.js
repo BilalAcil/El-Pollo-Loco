@@ -78,20 +78,27 @@ class Endboss extends MovableObject {
       const index = this.world.level.enemies.indexOf(this);
       if (index > -1) {
         this.world.level.enemies.splice(index, 1);
-        console.log("🗑️ Endboss wurde entfernt!");
       }
     }
   }
 
   onDeath() {
-    if (this.world && !this.world.maracas) {
-      console.log("🎵 Maracas erscheinen gleich...");
+    if (this.isDeadHandled) return;  // verhindert Doppelevents
+    this.isDeadHandled = true;
+
+    // 🛡️ Bodyguard ebenfalls töten
+    if (this.world?.bodyguard && !this.world.bodyguard.isDead) {
+      this.world.bodyguard.die();
+    }
+
+    // 🪇 Maracas erscheinen lassen
+    if (!this.world.maracas) {
       setTimeout(() => {
         this.world.maracas = new Maracas();
-        console.log("🪇 Maracas sind erschienen!");
       }, 800);
     }
   }
+
 
 
   // Methode wird aufgerufen, wenn der Boss getroffen wird
@@ -120,7 +127,7 @@ class Endboss extends MovableObject {
       const box = this.collisionBox;
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "red";
+      ctx.strokeStyle = "transparent";
       // Relative Position zur Hitbox zeichnen
       ctx.rect(box.x - this.x, box.y - this.y, box.width, box.height);
       ctx.stroke();

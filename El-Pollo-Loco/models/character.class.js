@@ -131,7 +131,7 @@ class Character extends MovableObject {
       const box = this.collisionBox;
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "blue"; // Andere Farbe für Character
+      ctx.strokeStyle = "transparent"; // Andere Farbe für Character
       // Relative Position zur Hitbox zeichnen
       ctx.rect(box.x - this.x, box.y - this.y, box.width, box.height);
       ctx.stroke();
@@ -143,51 +143,115 @@ class Character extends MovableObject {
     // Bewegung und Kamera
     setInterval(() => {
       if (this.isPaused) return;  // ⏸ Bewegung einfrieren
-      if (this.atEndboss) {
-        this.world.camera_x = -4100 + 100;
-      } else {
-        this.world.camera_x = -this.x + 100;
+
+      // 🎥 Kamera-Logik
+      if (this.world) {
+
+        // 👉 NEU: Panning nach rechts erst starten, wenn Pepe über x = 4050 ist
+        if (
+          this.atEndboss &&
+          this.world.hasBodyguardDied &&                 // Bodyguard ist tot
+          this.world.shouldStartCameraPanBack &&         // wir haben "warte auf PanBack" vorgemerkt
+          !this.world.isCameraPanning &&                 // aktuell kein Panning
+          this.x >= 4000                                 // Pepe ist weit genug rechts
+        ) {
+          this.world.startEndbossCameraPanBack();
+          this.world.shouldStartCameraPanBack = false;   // nur einmal starten
+        }
+
+        // 1️⃣ Weiches Panning aktiv?
+        if (this.world.isCameraPanning && typeof this.world.cameraTargetX === 'number') {
+          const target = this.world.cameraTargetX;
+          const speed = this.world.cameraPanSpeed || 2;
+
+          if (this.world.camera_x < target) {
+            this.world.camera_x += speed;
+            if (this.world.camera_x > target) this.world.camera_x = target;
+          } else if (this.world.camera_x > target) {
+            this.world.camera_x -= speed;
+            if (this.world.camera_x < target) this.world.camera_x = target;
+          }
+
+          // Ziel erreicht → Panning beenden & feste Endboss-Kamera setzen
+          if (Math.abs(this.world.camera_x - target) < 1) {
+            this.world.camera_x = target;
+            this.world.isCameraPanning = false;
+            this.world.endbossCameraX = target; // ab jetzt bleibt sie dort
+
+            // 🔊 Sound stoppen
+            if (typeof this.world.stopCameraMoveSound === 'function') {
+              this.world.stopCameraMoveSound();
+            }
+          }
+
+        } else if (this.atEndboss) {
+          // Wenn schon eine feste Endboss-Kameraposition existiert → diese nutzen
+          if (typeof this.world.endbossCameraX === 'number') {
+            this.world.camera_x = this.world.endbossCameraX;
+          } else {
+            // Standard: fester Bereich 4000–4600 (wie bisher)
+            this.world.camera_x = -4100 + 100; // = -4000
+          }
+
+        } else {
+          // 3️⃣ Normaler Kamerafollow außerhalb des Endbossbereichs
+          this.world.camera_x = -this.x + 100;
+        }
       }
+
 
       // 🧩 Knockback-Bewegung automatisch verarbeiten
       if (this.knockbackActive) {
         this.x += this.speedX;
-
-        // Reibung / allmähliches Stoppen
         this.speedX *= 0.9;
-
-        // Wenn fast gestoppt, Knockback beenden
         if (Math.abs(this.speedX) < 1) {
           this.knockbackActive = false;
           this.speedX = 0;
         }
-
       }
 
       // 🧩 Bewegung deaktivieren, wenn Welt pausiert ist
       if (this.world.isPaused) return;
 
-      // Bewegung
-      if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
+      // 🛑 Spieler eingefroren?
+      if (this.freezeForBodyguard)
+        return;
+
+      // 👉 AKTUELLE LAUF-GRENZEN BERECHNEN
+      let minX = 0;
+      let maxX = this.world.level.level_end_x;
+
+      if (this.atEndboss && this.world && this.world.canvas) {
+        // Sichtbarer Bereich im Welt-Koordinatensystem
+        const viewLeft = -this.world.camera_x;
+        const viewRight = -this.world.camera_x + this.world.canvas.width;
+
+        const margin = 10; // kleiner Rand, damit Pepe nicht direkt am Bildschirmrand klebt
+
+        minX = viewLeft + margin;
+        maxX = viewRight - this.width - margin;
+      }
+
+      // Bewegung RECHTS
+      if (this.world.keyboard.RIGHT && this.x < maxX) {
         this.moveRight();
         this.otherDirection = false;
         this.handleMovement();
       }
 
-      if (
-        this.world.keyboard.LEFT &&
-        this.x > 0 &&
-        (!this.atEndboss || this.x > 3980)
-      ) {
+      // Bewegung LINKS
+      if (this.world.keyboard.LEFT && this.x > minX) {
         this.moveLeft();
         this.otherDirection = true;
         this.handleMovement();
       }
 
+      // Springen
       if (this.world.keyboard.SPACE && !this.isAboveGround()) {
         this.jump();
         this.handleMovement();
       }
+
 
       // 👉 WURF-ANIMATION (Taste D)
       if (this.world.keyboard.D && this.animationFinished) {
@@ -200,10 +264,26 @@ class Character extends MovableObject {
       if (this.x >= 4100 && !this.atEndboss) {
         this.atEndboss = true;
 
+        // Musik abspielen
         if (this.world && this.world.countdown) {
           this.world.countdown.playEndBossMusic();
+
+          // ⏱️ NEU: Countdown für 2 Sekunden ausblenden
+          if (typeof this.world.countdown.hideTemporarily === 'function') {
+            this.world.countdown.hideTemporarily(3000);
+          }
+        }
+
+        // Spieler anhalten
+        this.freezeForBodyguard = true;
+
+        // 📌 BODYGUARD herunterspringen lassen
+        if (this.world.bodyguard && !this.world.bodyguard.hasJumped) {
+          this.world.bodyguard.jumpToEndboss();
+          this.world.bodyguard.hasJumped = true;
         }
       }
+
 
 
 
@@ -223,13 +303,14 @@ class Character extends MovableObject {
 
     // Animation
     setInterval(() => {
-      // Wenn das Spiel/der Charakter gerade pausiert ist,
-      // wird die komplette Animationslogik übersprungen
-      if (this.isPaused) return;  // ⏸ Animation einfrieren
-
-      // Wenn gerade ein Wurf ausgeführt wird (z.B. Flasche werfen),
-      // soll die normale Animationslogik nicht dazwischenfunken
+      if (this.isPaused) return;
       if (this.isThrowing) return;
+
+      // 🛑 Wenn Bodyguard landet → Pepe zeigt EIN Standbild
+      if (this.freezeForBodyguard) {
+        this.loadImage('img/2_character_pepe/3_jump/J-31.png');
+        return; // keine Animation abspielen
+      }
 
       // 👉 Berechnung, wie lange der Spieler "effektiv" schon inaktiv ist
       // (also seit der letzten Bewegung)
@@ -519,16 +600,19 @@ class Character extends MovableObject {
       // Wenn Pepe existiert, entferne ihn aus dem Array
       if (index > -1) {
         this.world.level.enemies.splice(index, 1);
-        console.log("🗑️ Pepe wurde aus der Welt entfernt!");
       }
     }
   }
 
 
 
-
   applyGravity() {
     setInterval(() => {
+      // 🔥 NEU: Wenn das Spiel/der Charakter pausiert ist → keine Gravitation
+      if (this.isPaused || (this.world && this.world.isPaused)) {
+        return;
+      }
+
       // 🧠 Wenn Pepe stirbt oder tot ist → keine Gravitation mehr
       if (this.energy <= 0 || this.isDying) {
         return;
@@ -550,4 +634,5 @@ class Character extends MovableObject {
       }
     }, 1000 / 25);
   }
+
 }
