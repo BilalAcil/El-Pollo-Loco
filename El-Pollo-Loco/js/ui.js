@@ -137,6 +137,19 @@ function applyMuteState(muted) {
 }
 
 
+function restoreMuteFromStorage() {
+  try {
+    const stored = localStorage.getItem('elPolloMute');
+    const muted = stored === '1';   // '1' = stumm, alles andere = nicht stumm
+    applyMuteState(muted);          // setzt Button-Text + globales Mute
+  } catch (e) {
+    console.warn('Konnte Mute-Status nicht aus localStorage lesen:', e);
+    applyMuteState(false);          // Fallback: Ton an
+  }
+}
+
+
+
 
 /**
  * Ton an/aus
@@ -384,6 +397,9 @@ function setupMobileControls() {
  * Warten, bis Browser + Spiel intern vollständig geladen sind
  */
 window.addEventListener('load', async () => {
+  // 🔊 1. Mute-Status aus Local Storage holen und anwenden
+  restoreMuteFromStorage();
+
   // 📱 Mobile-Touch-Buttons mit Keyboard koppeln
   setupMobileControls();
 
@@ -401,6 +417,7 @@ window.addEventListener('load', async () => {
     startBtn.onclick = startGame;
   }
 });
+
 
 
 
