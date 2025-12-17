@@ -132,7 +132,27 @@ button:hover {
   z-index: 20;
 }
 
+.dialog-close-button {
+  position: sticky;
+  top: 0px;
+  float: right;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: solid 2px #ffcc00;
+  border-radius: 8px;
+  cursor: pointer;
+  background: black;
+  /* damit es über Text liegt */
+  z-index: 5;
+}
+
 .dialog-content {
+  position: relative;
+  /* wichtig: Bezugspunkt für den Button */
   background: black;
   border-radius: 10px;
   padding: 20px 30px;
@@ -140,9 +160,7 @@ button:hover {
   width: 510px;
   height: 350px;
   overflow-y: auto;
-  /* ← vertikales Scrollen aktivieren */
   overflow-x: hidden;
-  /* ← horizontales Scrollen verhindern */
 }
 
 /* Scrollbalken zuerst unsichtbar */
