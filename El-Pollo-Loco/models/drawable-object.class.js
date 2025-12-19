@@ -55,7 +55,7 @@ class DrawableObject {
     ) {
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "red";
+      ctx.strokeStyle = "transparent";
 
       if (this.collisionBox) {
         const box = this.collisionBox;
