@@ -86,7 +86,7 @@ class World {
     //  Restliche Gegner (z.B. Endboss) + Bodyguard übernehmen:
     this.level.enemies = [
       ...chickens,                                                // 🐔 Chickens
-      this.bodyguard,                                             // 🛡️ Bodyguard HINZUFÜGEN
+      this.bodyguard,                                             // 🛡️ Bodyguard
       ...this.level.enemies.filter(e =>
         e instanceof Endboss || e instanceof EndBossStatusBar
       )                                                           // 🦹‍♂️ Endboss + HP-Bar
@@ -105,7 +105,16 @@ class World {
       this.endbossBar.world = this;
       this.endbossBar.setPercentage(100);
     }
+
+    // 🔥 NEU: Endboss, Lebensleiste und Nest verstecken,
+    // solange der Bodyguard noch lebt
+    if (!this.hasBodyguardDied) {
+      if (this.endboss) this.endboss.visible = false;
+      if (this.endbossBar) this.endbossBar.visible = false;
+      if (this.chickenNest) this.chickenNest.visible = false;
+    }
   }
+
 
 
 
@@ -749,9 +758,15 @@ class World {
     if (this.hasBodyguardDied) return;   // nur einmal reagieren
     this.hasBodyguardDied = true;
 
-    // Noch NICHT direkt pannen, nur vormerken:
+    // 🎭 Endboss, HP-Bar & Nest sichtbar machen
+    if (this.endboss) this.endboss.visible = true;
+    if (this.endbossBar) this.endbossBar.visible = true;
+    if (this.chickenNest) this.chickenNest.visible = true;
+
+    // Kamera später zurückfahren (deine bestehende Logik)
     this.shouldStartCameraPanBack = true;
   }
+
 
 
 

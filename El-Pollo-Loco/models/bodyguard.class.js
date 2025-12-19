@@ -201,13 +201,12 @@ class Bodyguard extends MovableObject {
 
   get collisionBox() {
     return {
-      x: this.x,
-      y: this.y + 30, // 🔥 Box etwas nach unten verschieben
-      width: this.width,
-      height: this.height - 30
+      x: this.x + 15,          // links etwas nach innen
+      y: this.y + 30,          // von oben nach unten versetzen
+      width: this.width - 25,  // rechts/links insgesamt 50 Pixel schmaler
+      height: this.height - 40 // oben/unten etwas kürzer
     };
   }
-
 
 
   hit() {

@@ -11,26 +11,17 @@ class DrawableObject {
   imageCache = {};
   currentImage = 0;
 
-  /**
-   * Einzelnes Bild laden
-   */
   loadImage(path) {
     this.img = new Image();
-
-    // wir erwarten ein weiteres Asset
     DrawableObject.totalAssets++;
 
     this.img.onload = () => {
       DrawableObject.loadedAssets++;
-      // console.log("Loaded single image:", path, DrawableObject.loadedAssets, "/", DrawableObject.totalAssets);
     };
 
     this.img.src = path;
   }
 
-  /**
-   * Mehrere Bilder (Animationen etc.) laden
-   */
   loadImages(arr) {
     arr.forEach((path) => {
       let img = new Image();
@@ -39,7 +30,6 @@ class DrawableObject {
 
       img.onload = () => {
         DrawableObject.loadedAssets++;
-        // console.log("Loaded image from array:", path, DrawableObject.loadedAssets, "/", DrawableObject.totalAssets);
       };
 
       img.src = path;
@@ -65,12 +55,21 @@ class DrawableObject {
     ) {
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "transparent";
+      ctx.strokeStyle = "red";
 
-      // 🔥 Nur beim Bodyguard Rahmen etwas nach unten verschieben
-      let offsetY = this instanceof Bodyguard ? 30 : 0;
+      if (this.collisionBox) {
+        const box = this.collisionBox;
+        ctx.rect(
+          box.x - this.x,
+          box.y - this.y,
+          box.width,
+          box.height
+        );
+      } else {
+        let offsetY = this instanceof Bodyguard ? 30 : 0;
+        ctx.rect(0, offsetY, this.width, this.height - offsetY);
+      }
 
-      ctx.rect(0, offsetY, this.width, this.height - offsetY);
       ctx.stroke();
     }
   }

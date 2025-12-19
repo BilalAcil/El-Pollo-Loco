@@ -14,4 +14,14 @@ class Salsa extends MovableObject {
     this.x = x;
     this.y = y || 400;
   }
+
+  // 🧱 Eigene, etwas kleinere Kollisionsbox
+  get collisionBox() {
+    return {
+      x: this.x + 15,           // links etwas rein
+      y: this.y + 7,           // oben etwas rein
+      width: this.width - 22,  // insgesamt schmaler (links+rechts je 10px)
+      height: this.height - 15 // unten etwas kürzer
+    };
+  }
 }

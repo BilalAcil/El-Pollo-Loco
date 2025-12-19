@@ -110,9 +110,9 @@ class Character extends MovableObject {
   // Kollisionsbox Character
   get collisionBox() {
     return {
-      x: this.x + 10, // Etwas von links verschieben
-      y: this.y + 100, // Hitbox nach unten verschieben (Kopfbereich ausschließen)
-      width: this.width - 20, // Breite reduzieren für schmalere Hitbox
+      x: this.x + 25, // Etwas von links verschieben
+      y: this.y + 95, // Hitbox nach unten verschieben (Kopfbereich ausschließen)
+      width: this.width - 60, // Breite reduzieren für schmalere Hitbox
       height: this.height - 110 // Höhe reduzieren (Kopf und Füße ausschließen)
     };
   }
@@ -131,7 +131,7 @@ class Character extends MovableObject {
       const box = this.collisionBox;
       ctx.beginPath();
       ctx.lineWidth = "1";
-      ctx.strokeStyle = "transparent"; // Andere Farbe für Character
+      ctx.strokeStyle = "blue"; // Andere Farbe für Character
       // Relative Position zur Hitbox zeichnen
       ctx.rect(box.x - this.x, box.y - this.y, box.width, box.height);
       ctx.stroke();
