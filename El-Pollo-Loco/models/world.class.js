@@ -265,20 +265,40 @@ class World {
       let characterJumpedOnEnemy = false;
 
       collidedEnemies.forEach(({ enemy, index }) => {
-        const characterBottom = this.character.y + this.character.height;
-        const enemyTop = enemy.y;
+        // 👉 Kollisionsboxen verwenden, falls vorhanden
+        const charBox = this.character.collisionBox || {
+          x: this.character.x,
+          y: this.character.y,
+          width: this.character.width,
+          height: this.character.height
+        };
 
-        // ✳️ NEU: größere Toleranz & sichere Prüfung für "von oben"
+        const enemyBox = enemy.collisionBox || {
+          x: enemy.x,
+          y: enemy.y,
+          width: enemy.width,
+          height: enemy.height
+        };
+
         const falling = this.character.speedY < 0;
-        const verticalOverlap = Math.abs(characterBottom - enemyTop);
+
+        const charBottom = charBox.y + charBox.height;
+        const charMiddleY = charBox.y + charBox.height / 2;
+
+        const enemyTop = enemyBox.y;
+        const enemyMiddleY = enemyBox.y + enemyBox.height / 2;
+
+        // 🧠 "von oben" = Pepe fällt, sein unterer Rand ist nahe der Oberkante
+        // des Gegners und sein Mittelpunkt liegt über dem Mittelpunkt des Gegners
+        const verticalDiff = charBottom - enemyTop; // positiv, wenn er "im" Gegner ist
 
         const jumpedOnEnemy =
           falling &&
-          verticalOverlap < 40 && // etwas großzügiger als 10–25
-          this.character.y + this.character.height / 2 < enemy.y + enemy.height / 2; // Charakter wirklich oberhalb
+          verticalDiff > -30 &&   // klein bisschen Toleranz nach oben
+          verticalDiff < 30 &&    // nicht tief seitlich "reingelaufen"
+          charMiddleY < enemyMiddleY; // Pepe klar oberhalb vom Gegner
 
         if (jumpedOnEnemy && !enemy.isDead) {
-
           // Gegner sofort töten
           this.killEnemy(enemy, index);
 
@@ -289,6 +309,7 @@ class World {
           characterJumpedOnEnemy = true;
         }
       });
+
 
 
       // Charakter springt ab
